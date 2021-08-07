@@ -63,6 +63,7 @@ public class WebClientPlugin implements ShenyuPlugin {
 
     @Override
     public Mono<Void> execute(final ServerWebExchange exchange, final ShenyuPluginChain chain) {
+        // 所有的远程调用会走这里进行
         final ShenyuContext shenyuContext = exchange.getAttribute(Constants.CONTEXT);
         assert shenyuContext != null;
         String urlPath = exchange.getAttribute(Constants.HTTP_URL);
@@ -74,6 +75,8 @@ public class WebClientPlugin implements ShenyuPlugin {
         int retryTimes = (int) Optional.ofNullable(exchange.getAttribute(Constants.HTTP_RETRY)).orElse(0);
         log.info("The request urlPath is {}, retryTimes is {}", urlPath, retryTimes);
         HttpMethod method = HttpMethod.valueOf(exchange.getRequest().getMethodValue());
+
+        // 进行远程调用获取调用的结果
         WebClient.RequestBodySpec requestBodySpec = webClient.method(method).uri(urlPath);
         return handleRequestBody(requestBodySpec, exchange, timeout, retryTimes, chain);
     }

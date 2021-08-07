@@ -59,6 +59,8 @@ public abstract class AbstractDataHandler<T> implements DataHandler {
 
     @Override
     public void handle(final String json, final String eventType) {
+        // 调用子类的convert方法
+        // 使用到类Java里面的多态的方式
         List<T> dataList = convert(json);
         if (CollectionUtils.isNotEmpty(dataList)) {
             DataEventTypeEnum eventTypeEnum = DataEventTypeEnum.acquireByName(eventType);

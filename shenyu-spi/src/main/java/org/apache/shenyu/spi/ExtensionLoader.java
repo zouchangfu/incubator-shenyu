@@ -74,12 +74,17 @@ public final class ExtensionLoader<T> {
      * @return the extension loader.
      */
     public static <T> ExtensionLoader<T> getExtensionLoader(final Class<T> clazz) {
+        // 传入的class对象
         if (clazz == null) {
             throw new NullPointerException("extension clazz is null");
         }
+
+        // 如果class不是接口的话，直接报错
         if (!clazz.isInterface()) {
             throw new IllegalArgumentException("extension clazz (" + clazz + ") is not interface!");
         }
+
+        // 判断接口是否有SPI注解，没有的话直接抛出异常
         if (!clazz.isAnnotationPresent(SPI.class)) {
             throw new IllegalArgumentException("extension clazz (" + clazz + ") without @" + SPI.class + " Annotation");
         }

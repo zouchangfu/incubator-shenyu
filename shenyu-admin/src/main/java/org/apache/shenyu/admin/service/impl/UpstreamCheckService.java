@@ -214,6 +214,7 @@ public class UpstreamCheckService {
                 }
                 successList.add(divideUpstream);
             } else {
+                // 如果检查不通过，创建一个僵尸对象
                 divideUpstream.setStatus(false);
                 ZOMBIE_SET.add(ZombieUpstream.transform(divideUpstream, zombieCheckTimes, selectorName));
                 log.error("check the url={} is fail ", divideUpstream.getUpstreamUrl());

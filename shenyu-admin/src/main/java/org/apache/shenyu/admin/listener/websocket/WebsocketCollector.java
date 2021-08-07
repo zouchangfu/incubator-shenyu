@@ -129,6 +129,8 @@ public class WebsocketCollector {
                     sendMessageBySession(session, message);
                 }
             } else {
+                //  这个session_set 就是和存储所有和admin建立起连接的session
+                // 开始给所有的session推送数据
                 SESSION_SET.forEach(session -> sendMessageBySession(session, message));
             }
         }

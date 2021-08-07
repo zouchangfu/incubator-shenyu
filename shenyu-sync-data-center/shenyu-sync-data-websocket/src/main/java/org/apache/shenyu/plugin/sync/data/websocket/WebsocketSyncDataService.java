@@ -69,12 +69,14 @@ public class WebsocketSyncDataService implements SyncDataService, AutoCloseable 
         }
         try {
             for (WebSocketClient client : clients) {
+                // 连接admin
                 boolean success = client.connectBlocking(3000, TimeUnit.MILLISECONDS);
                 if (success) {
                     log.info("websocket connection is successful.....");
                 } else {
                     log.error("websocket connection is error.....");
                 }
+                // 启动定时任务，检测admin的websocket 是否存活
                 executor.scheduleAtFixedRate(() -> {
                     try {
                         if (client.isClosed()) {
