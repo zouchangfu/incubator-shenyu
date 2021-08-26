@@ -19,7 +19,6 @@ package org.apache.shenyu.plugin.modify.response;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.shenyu.common.constant.Constants;
 import org.apache.shenyu.common.dto.RuleData;
@@ -60,7 +59,6 @@ import java.util.Set;
 /**
  * ModifyResponse plugin.
  */
-@Slf4j
 public class ModifyResponsePlugin extends AbstractShenyuPlugin {
 
     public ModifyResponsePlugin() {
@@ -91,7 +89,7 @@ public class ModifyResponsePlugin extends AbstractShenyuPlugin {
             if (MapUtils.isNotEmpty(modifyResponseRuleHandle.getReplaceHeaderKeys())) {
                 Map<String, String> replaceHeaderMap = modifyResponseRuleHandle.getReplaceHeaderKeys();
                 replaceHeaderMap.forEach((key, value) -> {
-                    httpHeaders.addAll(value, httpHeaders.get(key));
+                    httpHeaders.addAll(value, Objects.requireNonNull(httpHeaders.get(key)));
                     httpHeaders.remove(key);
                 });
             }
