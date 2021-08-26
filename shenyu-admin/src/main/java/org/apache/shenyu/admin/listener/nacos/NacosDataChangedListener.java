@@ -144,7 +144,10 @@ public class NacosDataChangedListener implements DataChangedListener {
                 });
                 break;
             default:
+                // 遍历需要更改的selector的数据
+                //
                 changed.forEach(selector -> {
+                    // 筛选出需要更改的selector数据
                     List<SelectorData> ls = SELECTOR_MAP
                             .getOrDefault(selector.getPluginName(), new ArrayList<>())
                             .stream()
@@ -237,11 +240,13 @@ public class NacosDataChangedListener implements DataChangedListener {
 
     @SneakyThrows
     private void publishConfig(final String dataId, final Object data) {
+        // 推送数据
         configService.publishConfig(dataId, NacosPathConstants.GROUP, GsonUtils.getInstance().toJson(data));
     }
 
     @SneakyThrows
     private String getConfig(final String dataId) {
+        // 获取nacos 中配置的数据
         String config = configService.getConfig(dataId, NacosPathConstants.GROUP, NacosPathConstants.DEFAULT_TIME_OUT);
         return StringUtils.hasLength(config) ? config : NacosPathConstants.EMPTY_CONFIG_DEFAULT_VALUE;
     }
@@ -277,7 +282,7 @@ public class NacosDataChangedListener implements DataChangedListener {
         }
         SELECTOR_MAP.keySet().removeAll(set);
     }
-    
+
     private void updateMetaDataMap(final String configInfo) {
         JsonObject jo = GsonUtils.getInstance().fromJson(configInfo, JsonObject.class);
         Set<String> set = new HashSet<>(META_DATA.keySet());

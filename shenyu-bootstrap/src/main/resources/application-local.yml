@@ -79,7 +79,7 @@ shenyu:
 #      waitTime: 1000
 #      watchDelay: 1000
   exclude:
-    enabled: false
+    enabled: true
     paths:
       - /favicon.ico
 

@@ -72,6 +72,7 @@ public class NacosCacheHandler {
     protected void updatePluginMap(final String configInfo) {
         try {
             // Fix bug #656(https://github.com/dromara/shenyu/issues/656)
+            // 从nacos配置拿数据，放到内存中
             List<PluginData> pluginDataList = new ArrayList<>(GsonUtils.getInstance().toObjectMap(configInfo, PluginData.class).values());
             pluginDataList.forEach(pluginData -> Optional.ofNullable(pluginDataSubscriber).ifPresent(subscriber -> {
                 subscriber.unSubscribe(pluginData);
