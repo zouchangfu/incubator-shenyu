@@ -39,7 +39,7 @@ public class DividePluginConfiguration {
 
     /**
      * init dividePlugin.
-     *
+     * 所有的执行逻辑都在DividePlugin里面
      * @return {@linkplain DividePlugin}
      */
     @Bean
@@ -89,7 +89,7 @@ public class DividePluginConfiguration {
     public WebSocketService webSocketService() {
         return new HandshakeWebSocketService();
     }
-    
+
     /**
      * Divide shenyu context decorator shenyu context decorator.
      *

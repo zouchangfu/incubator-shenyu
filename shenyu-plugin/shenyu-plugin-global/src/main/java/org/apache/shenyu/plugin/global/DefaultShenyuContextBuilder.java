@@ -52,19 +52,26 @@ public class DefaultShenyuContextBuilder implements ShenyuContextBuilder {
     @Override
     public ShenyuContext build(final ServerWebExchange exchange) {
         ServerHttpRequest request = exchange.getRequest();
+        // 获取请求的URI
         String path = request.getURI().getPath();
+        // 根据请求路径获取元数据信息
         MetaData metaData = MetaDataCache.getInstance().obtain(path);
         String rpcType;
         if (Objects.nonNull(metaData) && metaData.getEnabled()) {
+            // 把元数据信息记录到请求的属性当中
             exchange.getAttributes().put(Constants.META_DATA, metaData);
+            // 根据源数据判断当前请求的请求类型
             rpcType = metaData.getRpcType();
         } else {
             String rpcTypeParam = request.getHeaders().getFirst("rpc_type");
+            // 如果元数据为空，默认为Http类型
             rpcType = StringUtils.isEmpty(rpcTypeParam) ? RpcTypeEnum.HTTP.getName() : rpcTypeParam;
         }
+        // 从decoratorMap中获取对于的类型处理
         return decoratorMap.get(rpcType).decorator(buildDefaultContext(request), metaData);
     }
 
+    // 把请求的数据设置到 shenyuContext 上下文中
     private ShenyuContext buildDefaultContext(final ServerHttpRequest request) {
         String appKey = request.getHeaders().getFirst(Constants.APP_KEY);
         String sign = request.getHeaders().getFirst(Constants.SIGN);

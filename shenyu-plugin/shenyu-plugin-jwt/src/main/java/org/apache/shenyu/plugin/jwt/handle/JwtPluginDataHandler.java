@@ -38,10 +38,13 @@ public class JwtPluginDataHandler implements PluginDataHandler {
     @Override
     public void handlerPlugin(final PluginData pluginData) {
         Map<String, String> configMap = GsonUtils.getInstance().toObjectMap(pluginData.getConfig(), String.class);
+        // SECRET_KEY： 使用jwt 生成token的时候的私钥
         String secretKey = Optional.ofNullable(configMap.get(Constants.SECRET_KEY)).orElse("");
+        // filterPath: 鉴权白名单列表，填请求接口的 API 路径，半角逗号 , 分隔。
         String filterPath = Optional.ofNullable(configMap.get(Constants.FILTER_PATH)).orElse("");
         JwtConfig jwtConfig = new JwtConfig();
         jwtConfig.setSecretKey(secretKey);
+        // 切割配置的白名单列表
         jwtConfig.setFilterPath(Arrays.asList(StringUtils.split(filterPath, ",")));
         Singleton.INST.single(JwtConfig.class, jwtConfig);
     }

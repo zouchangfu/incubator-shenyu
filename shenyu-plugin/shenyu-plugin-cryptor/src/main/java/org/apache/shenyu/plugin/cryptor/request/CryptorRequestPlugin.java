@@ -99,6 +99,7 @@ public class CryptorRequestPlugin extends AbstractShenyuPlugin {
         return PluginEnum.CRYPTOR_REQUEST.getName();
     }
 
+    // 加密请求对象数据
     private Mono strategyMatch(final CryptorRequestRuleHandle ruleHandle, final String originalBody, final ServerWebExchange exchange) {
         String parseBody = JsonUtil.parser(originalBody, ruleHandle.getFieldNames());
         if (null == parseBody) {

@@ -81,28 +81,40 @@ public class WebSocketPlugin extends AbstractShenyuPlugin {
 
     @Override
     protected Mono<Void> doExecute(final ServerWebExchange exchange, final ShenyuPluginChain chain, final SelectorData selector, final RuleData rule) {
+        // 获取所有的存活地址
         final List<DivideUpstream> upstreamList = UpstreamCacheManager.getInstance().findUpstreamListBySelectorId(selector.getId());
+        // 获取context
         final ShenyuContext shenyuContext = exchange.getAttribute(Constants.CONTEXT);
         if (CollectionUtils.isEmpty(upstreamList) || Objects.isNull(shenyuContext)) {
             LOG.error("divide upstream configuration error：{}", rule.toString());
             return chain.execute(exchange);
         }
+
+        // 获取规则
         final DivideRuleHandle ruleHandle = GsonUtils.getInstance().fromJson(rule.getHandle(), DivideRuleHandle.class);
         final String ip = Objects.requireNonNull(exchange.getRequest().getRemoteAddress()).getAddress().getHostAddress();
+
+        // 通过负载均衡算法获取一个地址
         DivideUpstream divideUpstream = LoadBalanceUtils.selector(upstreamList, ruleHandle.getLoadBalance(), ip);
+
         if (Objects.isNull(divideUpstream)) {
             LOG.error("websocket has no upstream");
             Object error = ShenyuResultWrap.error(ShenyuResultEnum.CANNOT_FIND_URL.getCode(), ShenyuResultEnum.CANNOT_FIND_URL.getMsg(), null);
             return WebFluxResultUtils.result(exchange, error);
         }
+
+        // 构建一个请求地址
         URI wsRequestUrl = UriComponentsBuilder.fromUri(URI.create(buildWsRealPath(divideUpstream, shenyuContext))).build().toUri();
         LOG.info("you websocket urlPath is :{}", wsRequestUrl.toASCIIString());
+
         HttpHeaders headers = exchange.getRequest().getHeaders();
+
         return this.webSocketService.handleRequest(exchange, new ShenyuWebSocketHandler(
                 wsRequestUrl, this.webSocketClient, filterHeaders(headers), buildWsProtocols(headers)));
     }
 
     private String buildWsRealPath(final DivideUpstream divideUpstream, final ShenyuContext shenyuContext) {
+        // 获取协议
         String protocol = divideUpstream.getProtocol();
         if (StringUtils.isEmpty(protocol)) {
             protocol = "ws://";

@@ -39,6 +39,7 @@ public class WebClientMessageWriter implements MessageWriter {
     @Override
     public Mono<Void> writeWith(final ServerWebExchange exchange, final ShenyuPluginChain chain) {
         return chain.execute(exchange).then(Mono.defer(() -> {
+            // 获取响应对象
             ServerHttpResponse response = exchange.getResponse();
             ClientResponse clientResponse = exchange.getAttribute(Constants.CLIENT_RESPONSE_ATTR);
             if (Objects.isNull(clientResponse)
@@ -53,6 +54,7 @@ public class WebClientMessageWriter implements MessageWriter {
             }
             response.getCookies().putAll(clientResponse.cookies());
             response.getHeaders().putAll(clientResponse.headers().asHttpHeaders());
+            // 把数据写入响应对象中
             return response.writeWith(clientResponse.body(BodyExtractors.toDataBuffers())).doOnCancel(() -> clean(exchange));
         }));
     }

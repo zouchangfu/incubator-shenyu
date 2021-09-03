@@ -50,12 +50,20 @@ public class GlobalPlugin implements ShenyuPlugin {
     public Mono<Void> execute(final ServerWebExchange exchange, final ShenyuPluginChain chain) {
         final ServerHttpRequest request = exchange.getRequest();
         final HttpHeaders headers = request.getHeaders();
+
+        // 获取请求头中的“Upgrade”
         final String upgrade = headers.getFirst("Upgrade");
         ShenyuContext shenyuContext;
+
+        // 请求头没有Upgrade属性 或者 不是upgrade值不是 websocket
+        // 为啥这么判断？
+        // 如果请求头中有Upgrade属性，而且值为websocket代表当前的请求为websocket的请求
         if (StringUtils.isBlank(upgrade) || !"websocket".equals(upgrade)) {
+            // 构建 上下文 shenyuContext
             shenyuContext = builder.build(exchange);
         } else {
             final MultiValueMap<String, String> queryParams = request.getQueryParams();
+            // 从请求的参数中获取值设置到 shenyuContext 上下文中
             shenyuContext = transformMap(queryParams);
         }
         exchange.getAttributes().put(Constants.CONTEXT, shenyuContext);

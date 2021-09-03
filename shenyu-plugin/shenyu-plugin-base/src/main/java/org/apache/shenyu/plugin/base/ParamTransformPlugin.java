@@ -60,14 +60,18 @@ public class ParamTransformPlugin implements ShenyuPlugin {
     public Mono<Void> execute(final ServerWebExchange exchange, final ShenyuPluginChain chain) {
         ServerHttpRequest request = exchange.getRequest();
         ShenyuContext shenyuContext = exchange.getAttribute(Constants.CONTEXT);
+
+        // 根据请求的MediaType类型，处理数据
         if (Objects.nonNull(shenyuContext)) {
             MediaType mediaType = request.getHeaders().getContentType();
             if (MediaType.APPLICATION_JSON.isCompatibleWith(mediaType)) {
                 return body(exchange, request, chain);
             }
+
             if (MediaType.APPLICATION_FORM_URLENCODED.isCompatibleWith(mediaType)) {
                 return formData(exchange, request, chain);
             }
+
             return query(exchange, request, chain);
         }
         return chain.execute(exchange);

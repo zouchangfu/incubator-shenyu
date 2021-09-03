@@ -51,16 +51,21 @@ public class JwtPlugin extends AbstractShenyuPlugin {
     @Override
     protected Mono<Void> doExecute(final ServerWebExchange exchange, final ShenyuPluginChain chain, final SelectorData selector, final RuleData rule) {
         JwtConfig jwtConfig = Singleton.INST.get(JwtConfig.class);
+        // 从header中获取AUTHORIZATION
         String authorization = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        // 获取token
         String token = exchange.getRequest().getHeaders().getFirst(TOKEN);
-        // filter path
+        // 获取路径
         String path = exchange.getRequest().getURI().getPath();
+        // 获取白名单列表
         List<String> filterPath = jwtConfig.getFilterPath();
         if (CollectionUtils.isNotEmpty(filterPath)) {
+            // 如果当前请求的路径在白名单内部，直接放行不做认证
             if (filterPath.contains(path)) {
                 return chain.execute(exchange);
             }
         }
+
         // check secreteKey
         if (StringUtils.isEmpty(jwtConfig.getSecretKey())) {
             Object error = ShenyuResultWrap.error(ShenyuResultEnum.SECRET_KEY_MUST_BE_CONFIGURED.getCode(), ShenyuResultEnum.SECRET_KEY_MUST_BE_CONFIGURED.getMsg(), null);

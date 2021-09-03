@@ -107,6 +107,7 @@ public class CryptorResponsePlugin extends AbstractShenyuPlugin {
         if (parseBody == null) {
             return Mono.just(originalBody);
         }
+        // 把响应体的数据进行通过策略名和key进行加密
         String modifiedBody = CryptorStrategyFactory.encrypt(ruleHandle.getStrategyName(), ruleHandle.getKey(), parseBody);
         JsonElement je = new JsonParser().parse(originalBody);
         JsonElement resultJe = JsonUtil.replaceJsonNode(je,

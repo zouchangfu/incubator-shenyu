@@ -85,6 +85,7 @@ public class WebClientPlugin implements ShenyuPlugin {
 
     @Override
     public int getOrder() {
+        // 这里的执行顺序为 divide 插件之后
         return PluginEnum.DIVIDE.getCode() + 1;
     }
 
