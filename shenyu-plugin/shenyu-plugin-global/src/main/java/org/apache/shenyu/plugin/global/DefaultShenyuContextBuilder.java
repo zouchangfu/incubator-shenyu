@@ -25,6 +25,7 @@ import org.apache.shenyu.plugin.api.context.ShenyuContext;
 import org.apache.shenyu.plugin.api.context.ShenyuContextBuilder;
 import org.apache.shenyu.plugin.api.context.ShenyuContextDecorator;
 import org.apache.shenyu.plugin.global.cache.MetaDataCache;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.server.ServerWebExchange;
 
@@ -56,12 +57,16 @@ public class DefaultShenyuContextBuilder implements ShenyuContextBuilder {
         String path = request.getURI().getPath();
         // 根据请求路径获取元数据信息
         MetaData metaData = MetaDataCache.getInstance().obtain(path);
+        HttpHeaders headers = request.getHeaders();
+        String upgrade = headers.getFirst("Upgrade");
         String rpcType;
         if (Objects.nonNull(metaData) && metaData.getEnabled()) {
             // 把元数据信息记录到请求的属性当中
             exchange.getAttributes().put(Constants.META_DATA, metaData);
             // 根据源数据判断当前请求的请求类型
             rpcType = metaData.getRpcType();
+        } else if (StringUtils.isNotEmpty(upgrade) && RpcTypeEnum.WEB_SOCKET.getName().equals(upgrade)) {
+            rpcType = RpcTypeEnum.WEB_SOCKET.getName();
         } else {
             String rpcTypeParam = request.getHeaders().getFirst("rpc_type");
             // 如果元数据为空，默认为Http类型

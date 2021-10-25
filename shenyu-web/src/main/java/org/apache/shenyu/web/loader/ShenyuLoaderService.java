@@ -18,11 +18,12 @@
 package org.apache.shenyu.web.loader;
 
 import org.apache.shenyu.common.concurrent.ShenyuThreadFactory;
+import org.apache.shenyu.common.utils.CollectionUtils;
 import org.apache.shenyu.plugin.api.ShenyuPlugin;
 import org.apache.shenyu.plugin.base.cache.CommonPluginDataSubscriber;
 import org.apache.shenyu.plugin.base.handler.PluginDataHandler;
-import org.apache.shenyu.web.configuration.properties.ShenyuConfig;
-import org.apache.shenyu.web.configuration.properties.ShenyuConfig.ExtPlugin;
+import org.apache.shenyu.common.config.ShenyuConfig;
+import org.apache.shenyu.common.config.ShenyuConfig.ExtPlugin;
 import org.apache.shenyu.web.handler.ShenyuWebHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +54,10 @@ public class ShenyuLoaderService {
             ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(config.getThreads(), ShenyuThreadFactory.create("plugin-ext-loader", true));
             executor.scheduleAtFixedRate(() -> {
                 try {
-                    List<ShenyuLoaderResult> results = ShenyuPluginLoader.getInstance().loadExtendPlugins();
+                    List<ShenyuLoaderResult> results = ShenyuPluginLoader.getInstance().loadExtendPlugins(config.getPath());
+                    if (CollectionUtils.isEmpty(results)) {
+                        return;
+                    }
                     List<ShenyuPlugin> shenyuExtendPlugins = results.stream().map(ShenyuLoaderResult::getShenyuPlugin).filter(Objects::nonNull).collect(Collectors.toList());
                     webHandler.putExtPlugins(shenyuExtendPlugins);
                     List<PluginDataHandler> handlers = results.stream().map(ShenyuLoaderResult::getPluginDataHandler).filter(Objects::nonNull).collect(Collectors.toList());
@@ -63,6 +67,5 @@ public class ShenyuLoaderService {
                 }
             }, config.getScheduleDelay(), config.getScheduleTime(), TimeUnit.SECONDS);
         }
-       
     }
 }

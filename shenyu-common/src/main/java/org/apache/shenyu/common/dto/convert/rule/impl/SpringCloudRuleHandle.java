@@ -19,6 +19,7 @@ package org.apache.shenyu.common.dto.convert.rule.impl;
 
 import org.apache.shenyu.common.constant.Constants;
 import org.apache.shenyu.common.dto.convert.rule.RuleHandle;
+import org.apache.shenyu.common.enums.LoadBalanceEnum;
 
 import java.util.Objects;
 
@@ -26,8 +27,6 @@ import java.util.Objects;
  * The type Spring cloud rule handle.
  */
 public class SpringCloudRuleHandle implements RuleHandle {
-
-    private static final long serialVersionUID = 269429745060607954L;
 
     /**
      * this remote uri path.
@@ -38,6 +37,12 @@ public class SpringCloudRuleHandle implements RuleHandle {
      * timeout is required.
      */
     private long timeout = Constants.TIME_OUT;
+
+    /**
+     * loadBalance.
+     * {@linkplain LoadBalanceEnum}
+     */
+    private String loadBalance = LoadBalanceEnum.ROUND_ROBIN.getName();
 
     /**
      * get path.
@@ -75,6 +80,24 @@ public class SpringCloudRuleHandle implements RuleHandle {
         this.timeout = timeout;
     }
 
+    /**
+     * get loadBalance.
+     *
+     * @return loadBalance loadBalance
+     */
+    public String getLoadBalance() {
+        return loadBalance;
+    }
+
+    /**
+     * set loadBalance.
+     *
+     * @param loadBalance loadBalance
+     */
+    public void setLoadBalance(final String loadBalance) {
+        this.loadBalance = loadBalance;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -101,11 +124,5 @@ public class SpringCloudRuleHandle implements RuleHandle {
                 + ", timeout="
                 + timeout
                 + '}';
-    }
-
-    @Override
-    public RuleHandle createDefault(final String path) {
-        this.path = path;
-        return this;
     }
 }

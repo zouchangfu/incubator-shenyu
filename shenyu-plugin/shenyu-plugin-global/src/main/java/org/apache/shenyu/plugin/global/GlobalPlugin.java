@@ -17,16 +17,12 @@
 
 package org.apache.shenyu.plugin.global;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.shenyu.common.constant.Constants;
 import org.apache.shenyu.common.enums.PluginEnum;
 import org.apache.shenyu.plugin.api.ShenyuPlugin;
 import org.apache.shenyu.plugin.api.ShenyuPluginChain;
 import org.apache.shenyu.plugin.api.context.ShenyuContext;
 import org.apache.shenyu.plugin.api.context.ShenyuContextBuilder;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -48,24 +44,7 @@ public class GlobalPlugin implements ShenyuPlugin {
     
     @Override
     public Mono<Void> execute(final ServerWebExchange exchange, final ShenyuPluginChain chain) {
-        final ServerHttpRequest request = exchange.getRequest();
-        final HttpHeaders headers = request.getHeaders();
-
-        // 获取请求头中的“Upgrade”
-        final String upgrade = headers.getFirst("Upgrade");
-        ShenyuContext shenyuContext;
-
-        // 请求头没有Upgrade属性 或者 不是upgrade值不是 websocket
-        // 为啥这么判断？
-        // 如果请求头中有Upgrade属性，而且值为websocket代表当前的请求为websocket的请求
-        if (StringUtils.isBlank(upgrade) || !"websocket".equals(upgrade)) {
-            // 构建 上下文 shenyuContext
-            shenyuContext = builder.build(exchange);
-        } else {
-            final MultiValueMap<String, String> queryParams = request.getQueryParams();
-            // 从请求的参数中获取值设置到 shenyuContext 上下文中
-            shenyuContext = transformMap(queryParams);
-        }
+        ShenyuContext shenyuContext = builder.build(exchange);
         exchange.getAttributes().put(Constants.CONTEXT, shenyuContext);
         return chain.execute(exchange);
     }
@@ -73,14 +52,6 @@ public class GlobalPlugin implements ShenyuPlugin {
     @Override
     public int getOrder() {
         return PluginEnum.GLOBAL.getCode();
-    }
-    
-    private ShenyuContext transformMap(final MultiValueMap<String, String> queryParams) {
-        ShenyuContext shenyuContext = new ShenyuContext();
-        shenyuContext.setModule(queryParams.getFirst(Constants.MODULE));
-        shenyuContext.setMethod(queryParams.getFirst(Constants.METHOD));
-        shenyuContext.setRpcType(queryParams.getFirst(Constants.RPC_TYPE));
-        return shenyuContext;
     }
     
     @Override

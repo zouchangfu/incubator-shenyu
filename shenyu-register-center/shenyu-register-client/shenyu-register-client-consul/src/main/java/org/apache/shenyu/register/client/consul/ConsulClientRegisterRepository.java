@@ -19,6 +19,7 @@ package org.apache.shenyu.register.client.consul;
 
 import com.ecwid.consul.v1.kv.KeyValueClient;
 import org.apache.shenyu.common.enums.RpcTypeEnum;
+import org.apache.shenyu.common.utils.ContextPathUtils;
 import org.apache.shenyu.common.utils.GsonUtils;
 import org.apache.shenyu.common.utils.LogUtils;
 import org.apache.shenyu.register.client.api.ShenyuClientRegisterRepository;
@@ -45,26 +46,31 @@ public class ConsulClientRegisterRepository implements ShenyuClientRegisterRepos
     @Override
     public void persistInterface(final MetaDataRegisterDTO metadata) {
         String rpcType = metadata.getRpcType();
-        String contextPath = metadata.getContextPath().substring(1);
+        String contextPath = ContextPathUtils.buildRealNode(metadata.getContextPath(), metadata.getAppName());
         registerMetadata(rpcType, contextPath, metadata);
-        if (RpcTypeEnum.HTTP.getName().equals(rpcType) || RpcTypeEnum.TARS.getName().equals(rpcType) || RpcTypeEnum.GRPC.getName().equals(rpcType)) {
-            registerURI(metadata);
-        }
         LogUtils.info(LOGGER, "{} Consul client register success: {}", rpcType, metadata);
+    }
+    
+    /**
+     * Persist uri.
+     *
+     * @param registerDTO the register dto
+     */
+    @Override
+    public void persistURI(final URIRegisterDTO registerDTO) {
+        registerURI(registerDTO);
     }
     
     private void registerMetadata(final String rpcType, final String contextPath, final MetaDataRegisterDTO metadata) {
         String metadataNodeName = buildMetadataNodeName(metadata);
         String metaDataPath = RegisterPathConstants.buildMetaDataParentPath(rpcType, contextPath);
-        
         String realNode = RegisterPathConstants.buildRealNode(metaDataPath, metadataNodeName);
         String metadataJson = GsonUtils.getInstance().toJson(metadata);
         keyValueClient.setKVValue(realNode, metadataJson);
     }
     
-    private void registerURI(final MetaDataRegisterDTO metadata) {
-        URIRegisterDTO uriRegisterDTO = URIRegisterDTO.transForm(metadata);
-        consulRegistration.getService().getMeta().put("uri", GsonUtils.getInstance().toJson(uriRegisterDTO));
+    private void registerURI(final URIRegisterDTO metadata) {
+        consulRegistration.getService().getMeta().put("uri", GsonUtils.getInstance().toJson(metadata));
     }
     
     private String buildMetadataNodeName(final MetaDataRegisterDTO metadata) {

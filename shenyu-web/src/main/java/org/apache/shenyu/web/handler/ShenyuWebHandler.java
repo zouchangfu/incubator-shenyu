@@ -20,7 +20,7 @@ package org.apache.shenyu.web.handler;
 import org.apache.shenyu.common.utils.CollectionUtils;
 import org.apache.shenyu.plugin.api.ShenyuPlugin;
 import org.apache.shenyu.plugin.api.ShenyuPluginChain;
-import org.apache.shenyu.web.configuration.properties.ShenyuConfig;
+import org.apache.shenyu.common.config.ShenyuConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
@@ -38,19 +38,20 @@ import java.util.stream.Collectors;
  * This is web handler request starter.
  */
 public final class ShenyuWebHandler implements WebHandler {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(ShenyuWebHandler.class);
 
     private final List<ShenyuPlugin> plugins;
-    
+
     private final boolean scheduled;
 
     private Scheduler scheduler;
-    
+
     /**
      * Instantiates a new shenyu web handler.
      *
      * @param plugins the plugins
+     * @param shenyuConfig plugins config
      */
     public ShenyuWebHandler(final List<ShenyuPlugin> plugins, final ShenyuConfig shenyuConfig) {
         this.plugins = plugins;
@@ -64,7 +65,7 @@ public final class ShenyuWebHandler implements WebHandler {
             }
         }
     }
-    
+
     /**
      * Handle the web server exchange.
      *
@@ -79,7 +80,7 @@ public final class ShenyuWebHandler implements WebHandler {
         }
         return execute;
     }
-    
+
     /**
      * Put ext plugins.
      *
@@ -105,7 +106,7 @@ public final class ShenyuWebHandler implements WebHandler {
         private int index;
 
         private final List<ShenyuPlugin> plugins;
-    
+
         /**
          * Instantiates a new Default shenyu plugin chain.
          *
@@ -126,7 +127,7 @@ public final class ShenyuWebHandler implements WebHandler {
             return Mono.defer(() -> {
                 if (this.index < plugins.size()) {
                     ShenyuPlugin plugin = plugins.get(this.index++);
-                    Boolean skip = plugin.skip(exchange);
+                    boolean skip = plugin.skip(exchange);
                     if (skip) {
                         return this.execute(exchange);
                     }
