@@ -17,6 +17,7 @@
 
 package org.apache.shenyu.plugin.websocket;
 
+import com.google.common.net.HttpHeaders;
 import org.apache.shenyu.common.constant.Constants;
 import org.apache.shenyu.common.dto.RuleData;
 import org.apache.shenyu.common.dto.SelectorData;
@@ -79,7 +80,7 @@ public class WebSocketPluginTest {
 
     @Before
     public void setup() {
-        this.ruleData = mock(RuleData.class);
+     /*   this.ruleData = mock(RuleData.class);
         this.chain = mock(ShenyuPluginChain.class);
         this.selectorData = mock(SelectorData.class);
         this.divideUpstreamList = Stream.of(3)
@@ -91,7 +92,7 @@ public class WebSocketPluginTest {
                 .remoteAddress(new InetSocketAddress(8090))
                 .header(UPGRADE, "WebSocket")
                 .header(CONNECTION, "upgrade")
-                .header(com.google.common.net.HttpHeaders.SEC_WEBSOCKET_KEY, "websocket")
+                .header(HttpHeaders.SEC_WEBSOCKET_KEY, "websocket")
                 .build());
         WebSocketClient webSocketClient = mock(WebSocketClient.class);
         this.webSocketService = mock(WebSocketService.class);
@@ -99,7 +100,7 @@ public class WebSocketPluginTest {
 
         // mock static
         mockCheckUtils = mockStatic(UpstreamCheckUtils.class);
-        mockCheckUtils.when(() -> UpstreamCheckUtils.checkUrl(anyString(), anyInt())).thenReturn(true);
+        mockCheckUtils.when(() -> UpstreamCheckUtils.checkUrl(anyString(), anyInt())).thenReturn(true);*/
     }
 
     @After

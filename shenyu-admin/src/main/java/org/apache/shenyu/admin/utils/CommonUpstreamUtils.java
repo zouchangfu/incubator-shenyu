@@ -22,7 +22,9 @@ import org.apache.shenyu.common.dto.convert.selector.DivideUpstream;
 import org.apache.shenyu.common.dto.convert.selector.DubboUpstream;
 import org.apache.shenyu.common.dto.convert.selector.GrpcUpstream;
 import org.apache.shenyu.common.dto.convert.selector.TarsUpstream;
+import org.apache.shenyu.common.utils.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -83,6 +85,9 @@ public class CommonUpstreamUtils {
      * @return the list
      */
     public static List<CommonUpstream> convertCommonUpstreamList(final List<? extends CommonUpstream> upstreamList) {
+        if (CollectionUtils.isEmpty(upstreamList)){
+            return  new ArrayList<>();
+        }
         return upstreamList.stream().map(upstream -> new CommonUpstream(upstream.getProtocol(), upstream.getUpstreamHost(), upstream.getUpstreamUrl())).collect(Collectors.toList());
     }
     

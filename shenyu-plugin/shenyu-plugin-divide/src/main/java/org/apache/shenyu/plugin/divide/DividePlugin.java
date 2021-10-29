@@ -54,8 +54,11 @@ public class DividePlugin extends AbstractShenyuPlugin {
 
     @Override
     protected Mono<Void> doExecute(final ServerWebExchange exchange, final ShenyuPluginChain chain, final SelectorData selector, final RuleData rule) {
+        // 获取上下文
         ShenyuContext shenyuContext = exchange.getAttribute(Constants.CONTEXT);
         assert shenyuContext != null;
+
+        // 获取插件规则
         DivideRuleHandle ruleHandle = DividePluginDataHandler.CACHED_HANDLE.get().obtainHandle(CacheKeyUtils.INST.getKey(rule));
         long headerSize = 0;
         for (List<String> multiHeader : exchange.getRequest().getHeaders().values()) {
@@ -73,12 +76,16 @@ public class DividePlugin extends AbstractShenyuPlugin {
             Object error = ShenyuResultWrap.error(ShenyuResultEnum.REQUEST_ENTITY_TOO_LARGE.getCode(), ShenyuResultEnum.REQUEST_ENTITY_TOO_LARGE.getMsg(), null);
             return WebFluxResultUtils.result(exchange, error);
         }
+
+        // 获取待转发的服务列表
         List<Upstream> upstreamList = UpstreamCacheManager.getInstance().findUpstreamListBySelectorId(selector.getId());
         if (CollectionUtils.isEmpty(upstreamList)) {
             LOG.error("divide upstream configuration error： {}", rule);
             Object error = ShenyuResultWrap.error(ShenyuResultEnum.CANNOT_FIND_URL.getCode(), ShenyuResultEnum.CANNOT_FIND_URL.getMsg(), null);
             return WebFluxResultUtils.result(exchange, error);
         }
+
+        // 负载均衡
         String ip = Objects.requireNonNull(exchange.getRequest().getRemoteAddress()).getAddress().getHostAddress();
         Upstream upstream = LoadBalancerFactory.selector(upstreamList, ruleHandle.getLoadBalance(), ip);
         if (Objects.isNull(upstream)) {
@@ -86,7 +93,8 @@ public class DividePlugin extends AbstractShenyuPlugin {
             Object error = ShenyuResultWrap.error(ShenyuResultEnum.CANNOT_FIND_URL.getCode(), ShenyuResultEnum.CANNOT_FIND_URL.getMsg(), null);
             return WebFluxResultUtils.result(exchange, error);
         }
-        // set the http url
+
+        // 构建url路径
         String domain = buildDomain(upstream);
         exchange.getAttributes().put(Constants.HTTP_DOMAIN, domain);
         // set the http timeout

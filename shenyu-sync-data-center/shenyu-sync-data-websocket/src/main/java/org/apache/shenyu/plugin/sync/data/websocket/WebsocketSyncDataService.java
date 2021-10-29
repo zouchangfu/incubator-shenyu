@@ -63,7 +63,9 @@ public class WebsocketSyncDataService implements SyncDataService, AutoCloseable 
                                     final PluginDataSubscriber pluginDataSubscriber,
                                     final List<MetaDataSubscriber> metaDataSubscribers,
                                     final List<AuthDataSubscriber> authDataSubscribers) {
+        // 获取配置文件配置的所有websocket服务的路径
         String[] urls = StringUtils.split(websocketConfig.getUrls(), ",");
+        // 根据websocket服务的个数创建线程池长度
         executor = new ScheduledThreadPoolExecutor(urls.length, ShenyuThreadFactory.create("websocket-connect", true));
         for (String url : urls) {
             try {
@@ -74,7 +76,7 @@ public class WebsocketSyncDataService implements SyncDataService, AutoCloseable 
         }
         try {
             for (WebSocketClient client : clients) {
-                // 连接admin
+                // 连接所有的shenyu-admin的websocket服务
                 boolean success = client.connectBlocking(3000, TimeUnit.MILLISECONDS);
                 if (success) {
                     LOG.info("websocket connection is successful.....");

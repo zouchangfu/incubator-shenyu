@@ -67,7 +67,7 @@ public abstract class AbstractShenyuPlugin implements ShenyuPlugin {
         // 获取插件的数据
         PluginData pluginData = BaseDataCache.getInstance().obtainPluginData(pluginName);
         if (pluginData != null && pluginData.getEnabled()) {
-            // 获取插件对于的选择器的数据
+            // 获取插件所有选择器
             final Collection<SelectorData> selectors = BaseDataCache.getInstance().obtainSelectorData(pluginName);
             if (CollectionUtils.isEmpty(selectors)) {
                 return handleSelectorIfNull(pluginName, exchange, chain);
@@ -83,6 +83,8 @@ public abstract class AbstractShenyuPlugin implements ShenyuPlugin {
             if (CollectionUtils.isEmpty(rules)) {
                 return handleRuleIfNull(pluginName, exchange, chain);
             }
+
+            // 匹配选择器中的规则
             RuleData rule;
             if (selectorData.getType() == SelectorTypeEnum.FULL_FLOW.getCode()) {
                 //get last
