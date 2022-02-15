@@ -26,14 +26,16 @@ jobs:
     strategy:
       matrix:
         case:
-          - shenyu-integration-test-alibaba-dubbo
-          - shenyu-integration-test-apache-dubbo
+          - shenyu-integrated-test-alibaba-dubbo
+          - shenyu-integrated-test-apache-dubbo
           - shenyu-integrated-test-grpc
           - shenyu-integrated-test-http
+          - shenyu-integrated-test-https
           - shenyu-integrated-test-motan
           - shenyu-integrated-test-spring-cloud
           - shenyu-integrated-test-sofa
           - shenyu-integrated-test-websocket
+          - shenyu-integrated-test-combination
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -58,10 +60,10 @@ jobs:
         run: ./mvnw -B clean install -Prelease,docker -Dmaven.javadoc.skip=true -Dmaven.test.skip=true
       - name: Build examples
         if: env.SKIP_CI != 'true'
-        run: ./mvnw -B clean install -DskipTests -f ./shenyu-examples/pom.xml -Pdocker
+        run: ./mvnw -B clean install -Pexample -Dmaven.javadoc.skip=true -Dmaven.test.skip=true -f ./shenyu-examples/pom.xml
       - name: Build integrated tests
         if: env.SKIP_CI != 'true'
-        run: ./mvnw -B clean install -DskipTests -f ./shenyu-integrated-test/pom.xml
+        run: ./mvnw -B clean install -Pit -DskipTests -f ./shenyu-integrated-test/pom.xml
       - name: Start docker compose
         if: env.SKIP_CI != 'true'
         run: docker-compose -f ./shenyu-integrated-test/${{ matrix.case }}/docker-compose.yml up -d
@@ -71,7 +73,7 @@ jobs:
       - name: Run test
         id: test
         if: env.SKIP_CI != 'true'
-        run: ./mvnw test -f ./shenyu-integrated-test/${{ matrix.case }}/pom.xml
+        run: ./mvnw test -Pit -f ./shenyu-integrated-test/${{ matrix.case }}/pom.xml
         continue-on-error: true
       - name: Check test result
         if: env.SKIP_CI != 'true'

@@ -25,6 +25,8 @@ import org.apache.shenyu.plugin.api.context.ShenyuContext;
 import org.apache.shenyu.plugin.api.context.ShenyuContextBuilder;
 import org.apache.shenyu.plugin.api.context.ShenyuContextDecorator;
 import org.apache.shenyu.plugin.global.cache.MetaDataCache;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.server.ServerWebExchange;
@@ -38,6 +40,12 @@ import java.util.Optional;
  * The type Default Shenyu context builder.
  */
 public class DefaultShenyuContextBuilder implements ShenyuContextBuilder {
+
+    private static final Logger LOG = LoggerFactory.getLogger(GlobalPlugin.class);
+
+    private static final String RPC_TYPE = "rpc_type";
+
+    private static final String UPGRADE = "Upgrade";
 
     private final Map<String, ShenyuContextDecorator> decoratorMap;
 
@@ -53,30 +61,23 @@ public class DefaultShenyuContextBuilder implements ShenyuContextBuilder {
     @Override
     public ShenyuContext build(final ServerWebExchange exchange) {
         ServerHttpRequest request = exchange.getRequest();
-        // 获取请求的URI
         String path = request.getURI().getPath();
-        // 根据请求路径获取元数据信息
         MetaData metaData = MetaDataCache.getInstance().obtain(path);
         HttpHeaders headers = request.getHeaders();
-        String upgrade = headers.getFirst("Upgrade");
+        String upgrade = headers.getFirst(UPGRADE);
         String rpcType;
-        if (Objects.nonNull(metaData) && metaData.getEnabled()) {
-            // 把元数据信息记录到请求的属性当中
+        if (Objects.nonNull(metaData) && Boolean.TRUE.equals(metaData.getEnabled())) {
             exchange.getAttributes().put(Constants.META_DATA, metaData);
-            // 根据源数据判断当前请求的请求类型
             rpcType = metaData.getRpcType();
         } else if (StringUtils.isNotEmpty(upgrade) && RpcTypeEnum.WEB_SOCKET.getName().equals(upgrade)) {
             rpcType = RpcTypeEnum.WEB_SOCKET.getName();
         } else {
-            String rpcTypeParam = request.getHeaders().getFirst("rpc_type");
-            // 如果元数据为空，默认为Http类型
+            String rpcTypeParam = request.getHeaders().getFirst(RPC_TYPE);
             rpcType = StringUtils.isEmpty(rpcTypeParam) ? RpcTypeEnum.HTTP.getName() : rpcTypeParam;
         }
-        // 从decoratorMap中获取对于的类型处理
         return decoratorMap.get(rpcType).decorator(buildDefaultContext(request), metaData);
     }
 
-    // 把请求的数据设置到 shenyuContext 上下文中
     private ShenyuContext buildDefaultContext(final ServerHttpRequest request) {
         String appKey = request.getHeaders().getFirst(Constants.APP_KEY);
         String sign = request.getHeaders().getFirst(Constants.SIGN);

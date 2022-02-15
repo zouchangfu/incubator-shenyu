@@ -18,6 +18,7 @@
 package org.apache.shenyu.plugin.sync.data.websocket.handler;
 
 import java.util.List;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.shenyu.common.enums.DataEventTypeEnum;
 
@@ -62,23 +63,26 @@ public abstract class AbstractDataHandler<T> implements DataHandler {
         // 调用子类的convert方法
         // 使用到类Java里面的多态的方式
         List<T> dataList = convert(json);
-        if (CollectionUtils.isNotEmpty(dataList)) {
-            DataEventTypeEnum eventTypeEnum = DataEventTypeEnum.acquireByName(eventType);
-            switch (eventTypeEnum) {
-                case REFRESH:
-                case MYSELF:
-                    doRefresh(dataList);
-                    break;
-                case UPDATE:
-                case CREATE:
-                    doUpdate(dataList);
-                    break;
-                case DELETE:
-                    doDelete(dataList);
-                    break;
-                default:
-                    break;
-            }
+
+        if (CollectionUtils.isEmpty(dataList)) {
+            return;
+        }
+
+        DataEventTypeEnum eventTypeEnum = DataEventTypeEnum.acquireByName(eventType);
+        switch (eventTypeEnum) {
+            case REFRESH:
+            case MYSELF:
+                doRefresh(dataList);
+                break;
+            case UPDATE:
+            case CREATE:
+                doUpdate(dataList);
+                break;
+            case DELETE:
+                doDelete(dataList);
+                break;
+            default:
+                break;
         }
     }
 }

@@ -24,6 +24,11 @@ import java.util.List;
  * PluginEnum.
  */
 public enum PluginEnum {
+
+    /**
+     * Mqtt plugin enum.
+     */
+    MQTT(0, 0, "mqtt"),
     
     /**
      * Global plugin enum.
@@ -84,6 +89,11 @@ public enum PluginEnum {
      * Request plugin enum.
      */
     REQUEST(120, 0, "request"),
+
+    /**
+     * GeneralContext plugin enum.
+     */
+    GENERAL_CONTEXT(125, 0, "generalContext"),
     
     /**
      * Hystrix plugin enum.

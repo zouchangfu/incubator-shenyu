@@ -18,19 +18,14 @@ server:
   address: 0.0.0.0
 
 spring:
-#  profiles:
-#    active: h2
+  profiles:
+    active: h2
   thymeleaf:
     cache: true
     encoding: utf-8
     enabled: true
     prefix: classpath:/static/
     suffix: .html
-  datasource:
-    url: jdbc:mysql://123.57.13.246:3306/shenyu?useUnicode=true&characterEncoding=utf-8&useSSL=false
-    username: root
-    password: rootYoutobin@990710
-    driver-class-name: com.mysql.jdbc.Driver
 
 mybatis:
   config-location: classpath:/mybatis/mybatis-config.xml
@@ -47,10 +42,6 @@ shenyu:
       zombieCheckTimes: 5
       scheduledTime: 10
       nacosNameSpace: ShenyuRegisterCenter
-  database:
-    dialect: mysql
-    init_script: "sql-script/mysql/schema.sql"
-    init_enable: true
   sync:
     websocket:
       enabled: true
@@ -95,11 +86,8 @@ shenyu:
       - /favicon.*
       - /static/**
       - /index**
-      - /plugin
-      - /platform/**
+      - /platform/login
       - /websocket
-      - /configs/**
-      - /shenyu-client/**
       - /error
       - /actuator/health
       - /swagger-ui.html

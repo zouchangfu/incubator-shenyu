@@ -24,62 +24,66 @@ import org.apache.shenyu.admin.service.impl.MetaDataServiceImpl;
 import org.apache.shenyu.common.enums.RpcTypeEnum;
 import org.apache.shenyu.register.common.dto.MetaDataRegisterDTO;
 import org.apache.shenyu.register.common.dto.URIRegisterDTO;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+    
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.BDDMockito.given;
-
+    
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+    
 /**
- * Test cases for ShenyuClientRegisterMotanServiceImpl.
+ * Test cases for {@link ShenyuClientRegisterMotanServiceImpl}.
  */
-@RunWith(MockitoJUnitRunner.Silent.class)
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public final class ShenyuClientRegisterMotanServiceImplTest {
-
+    
     @InjectMocks
     private ShenyuClientRegisterMotanServiceImpl shenyuClientRegisterMotanService;
-
+    
     @Mock
     private MetaDataServiceImpl metaDataService;
-
+    
     @Test
-    public void rpcType() {
+    public void testRpcType() {
         String rpcType = shenyuClientRegisterMotanService.rpcType();
-        Assert.assertEquals(RpcTypeEnum.MOTAN.getName(), rpcType);
+        assertEquals(RpcTypeEnum.MOTAN.getName(), rpcType);
     }
-
+    
     @Test
-    public void selectorHandler() {
+    public void testSelectorHandler() {
         MetaDataRegisterDTO metaDataRegisterDTO = MetaDataRegisterDTO.builder().build();
-        Assert.assertEquals(StringUtils.EMPTY, shenyuClientRegisterMotanService.selectorHandler(metaDataRegisterDTO));
+        assertEquals(StringUtils.EMPTY, shenyuClientRegisterMotanService.selectorHandler(metaDataRegisterDTO));
     }
-
+    
     @Test
-    public void ruleHandler() {
-        Assert.assertEquals(StringUtils.EMPTY, shenyuClientRegisterMotanService.ruleHandler());
+    public void testRuleHandler() {
+        assertEquals(StringUtils.EMPTY, shenyuClientRegisterMotanService.ruleHandler());
     }
-
+    
     @Test
-    public void registerMetadata() {
+    public void testRegisterMetadata() {
         MetaDataDO metaDataDO = MetaDataDO.builder().build();
-        given(metaDataService.findByPath(anyString())).willReturn(metaDataDO);
-
+        when(metaDataService.findByPath(any())).thenReturn(metaDataDO);
         MetaDataRegisterDTO metaDataDTO = MetaDataRegisterDTO.builder().build();
         shenyuClientRegisterMotanService.registerMetadata(metaDataDTO);
+        verify(metaDataService).saveOrUpdateMetaData(metaDataDO, metaDataDTO);
     }
-
+    
     @Test
-    public void buildHandle() {
+    public void testBuildHandle() {
         List<URIRegisterDTO> list = new ArrayList<>();
         list.add(URIRegisterDTO.builder().build());
-        Assert.assertEquals(StringUtils.EMPTY,
+        assertEquals(StringUtils.EMPTY,
             shenyuClientRegisterMotanService.buildHandle(list, SelectorDO.builder().build()));
     }
 }

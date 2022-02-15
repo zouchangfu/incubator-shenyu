@@ -18,44 +18,53 @@
 package org.apache.shenyu.client.springcloud.init;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shenyu.client.core.constant.ShenyuClientConstants;
 import org.apache.shenyu.client.core.disruptor.ShenyuClientRegisterEventPublisher;
+import org.apache.shenyu.client.core.exception.ShenyuClientIllegalArgumentException;
 import org.apache.shenyu.common.enums.RpcTypeEnum;
+import org.apache.shenyu.common.exception.ShenyuException;
 import org.apache.shenyu.common.utils.IpUtils;
 import org.apache.shenyu.register.common.config.PropertiesConfig;
 import org.apache.shenyu.register.common.dto.MetaDataRegisterDTO;
 import org.apache.shenyu.register.common.dto.URIRegisterDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.env.Environment;
 import org.springframework.lang.NonNull;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The type Context register listener.
  */
-public class ContextRegisterListener implements ApplicationListener<ContextRefreshedEvent> {
+public class ContextRegisterListener implements ApplicationListener<ContextRefreshedEvent>, BeanFactoryAware {
 
     private static final Logger LOG = LoggerFactory.getLogger(ContextRegisterListener.class);
 
-    private ShenyuClientRegisterEventPublisher publisher = ShenyuClientRegisterEventPublisher.getInstance();
+    private final ShenyuClientRegisterEventPublisher publisher = ShenyuClientRegisterEventPublisher.getInstance();
 
     private final AtomicBoolean registered = new AtomicBoolean(false);
 
     private final Boolean isFull;
-    
+
     private final String host;
 
-    private Environment env;
+    private final String contextPath;
 
-    private String contextPath;
-    
-    private String appName;
-    
-    private Integer port;
+    private final String appName;
+
+    private final Integer port;
+
+    private BeanFactory beanFactory;
 
     /**
      * Instantiates a new Context register listener.
@@ -65,57 +74,85 @@ public class ContextRegisterListener implements ApplicationListener<ContextRefre
      */
     public ContextRegisterListener(final PropertiesConfig config, final Environment env) {
         Properties props = config.getProps();
-        this.isFull = Boolean.parseBoolean(props.getProperty("isFull", "false"));
-        String contextPath = props.getProperty("contextPath");
-        this.contextPath = contextPath;
-        if (isFull) {
+        this.isFull = Boolean.parseBoolean(props.getProperty(ShenyuClientConstants.IS_FULL, Boolean.FALSE.toString()));
+        this.contextPath = props.getProperty(ShenyuClientConstants.CONTEXT_PATH);
+        if (Boolean.TRUE.equals(isFull)) {
             if (StringUtils.isBlank(contextPath)) {
                 String errorMsg = "http register param must config the contextPath";
                 LOG.error(errorMsg);
-                throw new RuntimeException(errorMsg);
+                throw new ShenyuClientIllegalArgumentException(errorMsg);
             }
-            this.contextPath = contextPath + "/**";
         }
-        int port = Integer.parseInt(props.getProperty("port"));
+        this.port = Integer.parseInt(Optional.ofNullable(props.getProperty(ShenyuClientConstants.PORT)).orElseGet(() -> "-1"));
         this.appName = env.getProperty("spring.application.name");
-        this.host = props.getProperty("host");
-        this.port = port;
+        this.host = props.getProperty(ShenyuClientConstants.HOST);
     }
 
     @Override
-    public void onApplicationEvent(@NonNull final ContextRefreshedEvent contextRefreshedEvent) {
+    public void setBeanFactory(final BeanFactory beanFactory) throws BeansException {
+        this.beanFactory = beanFactory;
+    }
+
+    @Override
+    public void onApplicationEvent(@NonNull final ContextRefreshedEvent webServerInitializedEvent) {
         if (!registered.compareAndSet(false, true)) {
             return;
         }
-        if (isFull) {
+        if (Boolean.TRUE.equals(isFull)) {
             publisher.publishEvent(buildMetaDataDTO());
         }
-        publisher.publishEvent(buildURIRegisterDTO());
+        final int mergedPort = port <= 0 ? findPort() : port;
+        publisher.publishEvent(buildUriRegisterDTO(mergedPort));
     }
-    
-    private URIRegisterDTO buildURIRegisterDTO() {
-        String host = IpUtils.isCompleteHost(this.host) ? this.host : IpUtils.getHost(this.host);
+
+    /**
+     * Note: springboot 1.x version has been made compatible.
+     * Note: In this way, no matter what container is actually used,
+     * you can get the port that is actually started in the end.
+     *
+     * @see org.springframework.boot.context.embedded.AbstractConfigurableEmbeddedServletContainer#getPort()
+     * @see org.springframework.boot.web.server.AbstractConfigurableWebServerFactory#getPort()
+     */
+    @SuppressWarnings("all")
+    private int findPort() {
+        try {
+            //works fine for springboot 2.x
+            return getPort("org.springframework.boot.web.server.AbstractConfigurableWebServerFactory");
+        } catch (Exception e) {
+            try {
+                //works fine for springboot 1.x
+                return getPort("org.springframework.boot.context.embedded.AbstractConfigurableEmbeddedServletContainer");
+            } catch (Exception exception) {
+                throw new ShenyuException("can not find port automatically ! try to config ${shenyu.client.springCloud.props.port}");
+            }
+        }
+    }
+
+    private int getPort(final String className) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        final Class<?> clazz = Class.forName(className);
+        final Method method = clazz.getMethod("getPort");
+        final Object bean = beanFactory.getBean(clazz);
+        return (int) method.invoke(bean);
+    }
+
+    private URIRegisterDTO buildUriRegisterDTO(final int port) {
         return URIRegisterDTO.builder()
                 .contextPath(this.contextPath)
                 .appName(appName)
-                .host(host)
+                .host(IpUtils.isCompleteHost(this.host) ? this.host : IpUtils.getHost(this.host))
                 .port(port)
                 .rpcType(RpcTypeEnum.SPRING_CLOUD.getName())
                 .build();
-        
     }
 
     private MetaDataRegisterDTO buildMetaDataDTO() {
-        String contextPath = this.contextPath;
-        String appName = env.getProperty("spring.application.name");
-        String path = contextPath + "/**";
         return MetaDataRegisterDTO.builder()
                 .contextPath(contextPath)
                 .appName(appName)
-                .path(path)
+                .path(contextPath)
                 .rpcType(RpcTypeEnum.SPRING_CLOUD.getName())
                 .enabled(true)
-                .ruleName(path)
+                .ruleName(contextPath)
                 .build();
     }
 }

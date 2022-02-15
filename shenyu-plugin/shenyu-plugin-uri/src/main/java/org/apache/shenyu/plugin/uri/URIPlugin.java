@@ -20,70 +20,56 @@ package org.apache.shenyu.plugin.uri;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shenyu.common.constant.Constants;
 import org.apache.shenyu.common.enums.PluginEnum;
-import org.apache.shenyu.common.enums.RpcTypeEnum;
 import org.apache.shenyu.plugin.api.ShenyuPlugin;
 import org.apache.shenyu.plugin.api.ShenyuPluginChain;
 import org.apache.shenyu.plugin.api.context.ShenyuContext;
+import org.apache.shenyu.plugin.api.utils.RequestQueryCodecUtil;
 import org.springframework.web.server.ServerWebExchange;
-import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
-import java.util.Objects;
 
 /**
  * The type Uri plugin.
  */
 public class URIPlugin implements ShenyuPlugin {
-    
+
     @Override
     public Mono<Void> execute(final ServerWebExchange exchange, final ShenyuPluginChain chain) {
         ShenyuContext shenyuContext = exchange.getAttribute(Constants.CONTEXT);
         assert shenyuContext != null;
         String path = exchange.getAttribute(Constants.HTTP_DOMAIN);
-        String rewriteURI = (String) exchange.getAttributes().get(Constants.REWRITE_URI);
-        URI uri = exchange.getRequest().getURI();
-        if (StringUtils.isNoneBlank(rewriteURI)) {
-            path = path + rewriteURI;
+        if (StringUtils.isBlank(path)) {
+            return chain.execute(exchange);
+        }
+        String rewriteUri = (String) exchange.getAttributes().get(Constants.REWRITE_URI);
+        if (StringUtils.isNoneBlank(rewriteUri)) {
+            path = path + rewriteUri;
         } else {
             String realUrl = shenyuContext.getRealUrl();
             if (StringUtils.isNoneBlank(realUrl)) {
                 path = path + realUrl;
             }
         }
-        URI realURI;
-        if (StringUtils.isNotEmpty(uri.getRawQuery()) && uri.getRawQuery().contains("%")) {
-            path = path + "?" + uri.getRawQuery();
-            realURI = UriComponentsBuilder.fromHttpUrl(path).build(true).toUri();
-        } else {
-            if (StringUtils.isNotEmpty(uri.getQuery())) {
-                path = path + "?" + uri.getQuery();
-            }
-            assert path != null;
-            realURI = UriComponentsBuilder.fromHttpUrl(path).build(false).toUri();
+        if (StringUtils.isNoneBlank(exchange.getRequest().getURI().getQuery())) {
+            path = String.join("?", path, RequestQueryCodecUtil.getCodecQuery(exchange));
         }
-        exchange.getAttributes().put(Constants.HTTP_URI, realURI);
+        exchange.getAttributes().put(Constants.HTTP_URI, URI.create(path));
         return chain.execute(exchange);
     }
-    
+
     @Override
     public int getOrder() {
         return PluginEnum.URI.getCode();
     }
-    
+
     @Override
     public String named() {
         return PluginEnum.URI.getName();
     }
-    
+
     @Override
     public boolean skip(final ServerWebExchange exchange) {
-        ShenyuContext shenyuContext = exchange.getAttribute(Constants.CONTEXT);
-        assert shenyuContext != null;
-        String rpcType = shenyuContext.getRpcType();
-        if (Objects.equals(rpcType, RpcTypeEnum.HTTP.getName())) {
-            return false;
-        }
-        return !Objects.equals(rpcType, RpcTypeEnum.SPRING_CLOUD.getName());
+        return skipExceptHttpLike(exchange);
     }
 }

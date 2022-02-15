@@ -17,36 +17,45 @@
 
 package org.apache.shenyu.plugin.jwt.handle;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.shenyu.common.constant.Constants;
 import org.apache.shenyu.common.dto.PluginData;
+import org.apache.shenyu.common.dto.RuleData;
+import org.apache.shenyu.common.dto.convert.rule.impl.JwtRuleHandle;
 import org.apache.shenyu.common.enums.PluginEnum;
 import org.apache.shenyu.common.utils.GsonUtils;
+import org.apache.shenyu.plugin.base.cache.CommonHandleCache;
 import org.apache.shenyu.plugin.base.handler.PluginDataHandler;
 import org.apache.shenyu.common.utils.Singleton;
+import org.apache.shenyu.plugin.base.utils.BeanHolder;
+import org.apache.shenyu.plugin.base.utils.CacheKeyUtils;
 import org.apache.shenyu.plugin.jwt.config.JwtConfig;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * Configuration data of the jwt plugin.
  */
 public class JwtPluginDataHandler implements PluginDataHandler {
 
+    public static final Supplier<CommonHandleCache<String, JwtRuleHandle>> CACHED_HANDLE = new BeanHolder<>(CommonHandleCache::new);
+
     @Override
     public void handlerPlugin(final PluginData pluginData) {
         Map<String, String> configMap = GsonUtils.getInstance().toObjectMap(pluginData.getConfig(), String.class);
-        // SECRET_KEY： 使用jwt 生成token的时候的私钥
         String secretKey = Optional.ofNullable(configMap.get(Constants.SECRET_KEY)).orElse("");
-        // filterPath: 鉴权白名单列表，填请求接口的 API 路径，半角逗号 , 分隔。
-        String filterPath = Optional.ofNullable(configMap.get(Constants.FILTER_PATH)).orElse("");
         JwtConfig jwtConfig = new JwtConfig();
         jwtConfig.setSecretKey(secretKey);
-        // 切割配置的白名单列表
-        jwtConfig.setFilterPath(Arrays.asList(StringUtils.split(filterPath, ",")));
         Singleton.INST.single(JwtConfig.class, jwtConfig);
+    }
+
+    @Override
+    public void handlerRule(final RuleData ruleData) {
+        Optional.ofNullable(ruleData.getHandle()).ifPresent(s -> {
+            JwtRuleHandle ruleHandle = GsonUtils.getInstance().fromJson(s, JwtRuleHandle.class);
+            CACHED_HANDLE.get().cachedHandle(CacheKeyUtils.INST.getKey(ruleData), ruleHandle);
+        });
     }
 
     @Override

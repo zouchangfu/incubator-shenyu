@@ -83,16 +83,11 @@ public class DefaultSignService implements SignService {
      */
     private Pair<Boolean, String> sign(final ShenyuContext shenyuContext, final ServerWebExchange exchange) {
         final AppAuthData appAuthData = SignAuthDataCache.getInstance().obtainAuthData(shenyuContext.getAppKey());
-        if (Objects.isNull(appAuthData) || !appAuthData.getEnabled()) {
+        if (Objects.isNull(appAuthData) || Boolean.FALSE.equals(appAuthData.getEnabled())) {
             LOG.error("sign APP_kEY does not exist or has been disabled,{}", shenyuContext.getAppKey());
             return Pair.of(Boolean.FALSE, Constants.SIGN_APP_KEY_IS_NOT_EXIST);
         }
-
-        // 为什么需要路由认证
-        // 假设没有路由认证的话，所有的路径都直接认证就可以了
-        // 如果有路由认证的话，当前请求的路径必须要在路由认证的路径当中
-        // 加了路由认证的之后，原本能通过的路由，现在可能也通过不了了
-        if (appAuthData.getOpen()) {
+        if (Boolean.TRUE.equals(appAuthData.getOpen())) {
             List<AuthPathData> pathDataList = appAuthData.getPathDataList();
             if (CollectionUtils.isEmpty(pathDataList)) {
                 LOG.error("You have not configured the sign path:{}", shenyuContext.getAppKey());
@@ -106,7 +101,6 @@ public class DefaultSignService implements SignService {
                 return Pair.of(Boolean.FALSE, Constants.SIGN_PATH_NOT_EXIST);
             }
         }
-
         String sigKey = ShenyuSignProviderWrap.generateSign(appAuthData.getAppSecret(), buildParamsMap(shenyuContext));
         boolean result = Objects.equals(sigKey, shenyuContext.getSign());
         if (!result) {
