@@ -46,6 +46,8 @@ public class ResponsePlugin implements ShenyuPlugin {
 
     @Override
     public Mono<Void> execute(final ServerWebExchange exchange, final ShenyuPluginChain chain) {
+
+        // 这里把请求到的数据写到response里面了
         ShenyuContext shenyuContext = exchange.getAttribute(Constants.CONTEXT);
         assert shenyuContext != null;
         return writerMap.get(shenyuContext.getRpcType()).writeWith(exchange, chain);

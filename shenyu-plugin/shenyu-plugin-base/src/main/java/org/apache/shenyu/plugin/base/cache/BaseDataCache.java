@@ -254,12 +254,16 @@ public final class BaseDataCache {
      * @param data the selector data
      */
     private void selectorAccept(final SelectorData data) {
+
+        // 获取插件的名称
         String key = data.getPluginName();
         synchronized (SELECTOR_MAP) {
             if (SELECTOR_MAP.containsKey(key)) {
                 List<SelectorData> existList = SELECTOR_MAP.get(key);
+                // 从集合里面剔除传过来的数据，然后重新更新天津新的数据
                 final List<SelectorData> resultList = existList.stream().filter(r -> !r.getId().equals(data.getId())).collect(Collectors.toList());
                 resultList.add(data);
+                // 然后在进行sort排序
                 final List<SelectorData> collect = resultList.stream().sorted(Comparator.comparing(SelectorData::getSort)).collect(Collectors.toList());
                 SELECTOR_MAP.put(key, collect);
             } else {

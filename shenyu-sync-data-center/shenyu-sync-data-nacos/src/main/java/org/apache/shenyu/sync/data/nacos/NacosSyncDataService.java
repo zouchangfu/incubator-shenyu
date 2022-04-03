@@ -51,6 +51,7 @@ public class NacosSyncDataService extends NacosCacheHandler implements AutoClose
      * Start.
      */
     public void start() {
+        // 从nacos拉取最新数据，兵器注册监听，当监听到数据有变化的时候，调用本地的updatePluginMap方法
         watcherData(NacosPathConstants.PLUGIN_DATA_ID, this::updatePluginMap);
         watcherData(NacosPathConstants.SELECTOR_DATA_ID, this::updateSelectorMap);
         watcherData(NacosPathConstants.RULE_DATA_ID, this::updateRuleMap);

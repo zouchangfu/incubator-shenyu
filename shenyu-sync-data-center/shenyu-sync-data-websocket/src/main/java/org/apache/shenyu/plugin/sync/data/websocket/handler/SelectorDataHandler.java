@@ -47,6 +47,9 @@ public class SelectorDataHandler extends AbstractDataHandler<SelectorData> {
 
     @Override
     protected void doUpdate(final List<SelectorData> dataList) {
+        // pluginDataSubscriber 这个对象从哪里赋值的呢？
+        // 其实在 WebsocketDataHandler 进行初始化的
+        //
         dataList.forEach(pluginDataSubscriber::onSelectorSubscribe);
     }
 

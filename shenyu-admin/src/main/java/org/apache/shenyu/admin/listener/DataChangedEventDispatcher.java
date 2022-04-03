@@ -49,6 +49,8 @@ public class DataChangedEventDispatcher implements ApplicationListener<DataChang
     @Override
     @SuppressWarnings("unchecked")
     public void onApplicationEvent(final DataChangedEvent event) {
+        // listeners 里面存储所有的监听数据的类
+        // 在下面这里进行初始化的
         for (DataChangedListener listener : listeners) {
             switch (event.getGroupKey()) {
                 case APP_AUTH:
@@ -74,6 +76,10 @@ public class DataChangedEventDispatcher implements ApplicationListener<DataChang
 
     @Override
     public void afterPropertiesSet() {
+        // 获取所有的DataChangedListener 监听者
+        // 其实一共就有 consul ，etcd，nacos，websocket ，zookeeper 这五种类型
+        // 这些listener 在哪里被初始化的呢！
+        // 在DataSysncConfiguration类初始化的，你使用什么样的同步方式（在配置文件配置的）就会初始化什么样的监听器
         Collection<DataChangedListener> listenerBeans = applicationContext.getBeansOfType(DataChangedListener.class).values();
         this.listeners = Collections.unmodifiableList(new ArrayList<>(listenerBeans));
     }

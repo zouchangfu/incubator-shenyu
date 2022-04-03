@@ -51,16 +51,25 @@ public class HystrixPlugin extends AbstractShenyuPlugin {
 
     @Override
     protected Mono<Void> doExecute(final ServerWebExchange exchange, final ShenyuPluginChain chain, final SelectorData selector, final RuleData rule) {
+        // 获取全局context
         final ShenyuContext shenyuContext = exchange.getAttribute(Constants.CONTEXT);
         assert shenyuContext != null;
+
+        // 获取插件配置的规则
         final HystrixHandle hystrixHandle = HystrixPluginDataHandler.CACHED_HANDLE.get().obtainHandle(CacheKeyUtils.INST.getKey(rule));
+
+        // 如果 groupKey 为空
+        // 把 context 中的 module 作为 groupKey
         if (StringUtils.isBlank(hystrixHandle.getGroupKey())) {
             hystrixHandle.setGroupKey(Objects.requireNonNull(shenyuContext).getModule());
         }
         if (StringUtils.isBlank(hystrixHandle.getCommandKey())) {
             hystrixHandle.setCommandKey(Objects.requireNonNull(shenyuContext).getMethod());
         }
+
+        // 获取对应的命令
         Command command = fetchCommand(hystrixHandle, exchange, chain);
+
         return Mono.create(s -> {
             Subscription sub = command.fetchObservable().subscribe(s::success,
                     s::error, s::success);
@@ -76,6 +85,9 @@ public class HystrixPlugin extends AbstractShenyuPlugin {
     }
 
     private Command fetchCommand(final HystrixHandle hystrixHandle, final ServerWebExchange exchange, final ShenyuPluginChain chain) {
+
+        // 如果隔离模式为 semaphore
+        // 一共分为两种模式 thread  和 semaphore
         if (hystrixHandle.getExecutionIsolationStrategy() == HystrixIsolationModeEnum.SEMAPHORE.getCode()) {
             return new HystrixCommand(HystrixBuilder.build(hystrixHandle),
                     exchange, chain, hystrixHandle.getCallBackUri());

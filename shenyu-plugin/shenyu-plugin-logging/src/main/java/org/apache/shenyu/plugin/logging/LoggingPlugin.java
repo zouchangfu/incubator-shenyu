@@ -59,11 +59,17 @@ public class LoggingPlugin extends AbstractShenyuPlugin {
     
     @Override
     protected Mono<Void> doExecute(final ServerWebExchange exchange, final ShenyuPluginChain chain, final SelectorData selector, final RuleData rule) {
+        // 获取请求对象
         ServerHttpRequest request = exchange.getRequest();
         StringBuilder requestInfo = new StringBuilder("Print Request Info: ").append(System.lineSeparator());
+
+        // 把请求对象的信息记录到 requestInfo 中
         requestInfo.append(getRequestUri(request)).append(getRequestMethod(request)).append(System.lineSeparator())
                 .append(getRequestHeaders(request)).append(System.lineSeparator())
                 .append(getQueryParams(request)).append(System.lineSeparator());
+
+        // 重新生成一个request对象和response 对象
+        // 重新创建 response 对象是为了记录响应回来的消息
         return chain.execute(exchange.mutate().request(new LoggingServerHttpRequest(request, requestInfo))
                 .response(new LoggingServerHttpResponse(exchange.getResponse(), requestInfo)).build());
     }
@@ -165,6 +171,7 @@ public class LoggingPlugin extends AbstractShenyuPlugin {
         @Override
         @NonNull
         public Mono<Void> writeWith(@NonNull final Publisher<? extends DataBuffer> body) {
+            // 当 response 进行响应的时候，顺便把响应的消息的日志打印
             return super.writeWith(appendResponse(body));
         }
 
