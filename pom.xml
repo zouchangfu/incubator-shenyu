@@ -105,7 +105,7 @@
         <swagger.version>2.9.2</swagger.version>
         <sofa.rpc.version>5.7.6</sofa.rpc.version>
         <tars.version>1.7.2</tars.version>
-        <skipTests>false</skipTests>
+        <skipTests>true</skipTests>
         <undertow.version>2.2.2.Final</undertow.version>
         <curator.version>5.2.1</curator.version>
         <wiremock.version>2.18.0</wiremock.version>
@@ -574,7 +574,7 @@
                 <artifactId>versions-maven-plugin</artifactId>
                 <version>${versions-maven-plugin.version}</version>
             </plugin>
-            <plugin>
+<!--            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>${maven-checkstyle-plugin.version}</version>
@@ -592,7 +592,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
 
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -614,7 +614,7 @@
                 </executions>
             </plugin>
 
-            <plugin>
+          <!--  <plugin>
                 <groupId>org.apache.rat</groupId>
                 <artifactId>apache-rat-plugin</artifactId>
                 <version>${apache-rat-plugin.version}</version>
@@ -628,30 +628,30 @@
                         <exclude>**/spring.provides</exclude>
                         <exclude>/script/**</exclude>
                         <exclude>**/*.json</exclude>
-                        <!-- IDE files -->
+                        &lt;!&ndash; IDE files &ndash;&gt;
                         <exclude>**/*.iml</exclude>
                         <exclude>**/.idea/**</exclude>
                         <exclude>**/*.classpath</exclude>
                         <exclude>**/.project</exclude>
                         <exclude>**/.settings/**</exclude>
                         <exclude>**/dependency-reduced-pom.xml</exclude>
-                        <!-- git files -->
+                        &lt;!&ndash; git files &ndash;&gt;
                         <exclude>**/.gitignore</exclude>
                         <exclude>**/.gitmodules</exclude>
                         <exclude>**/.git/**</exclude>
-                        <!-- CI files -->
+                        &lt;!&ndash; CI files &ndash;&gt;
                         <exclude>**/.travis.yml</exclude>
                         <exclude>**/.codecov.yml</exclude>
                         <exclude>**/.mvn/jvm.config</exclude>
                         <exclude>**/.mvn/wrapper/maven-wrapper.properties</exclude>
-                        <!-- GitHub files -->
+                        &lt;!&ndash; GitHub files &ndash;&gt;
                         <exclude>**/.github/**</exclude>
-                        <!-- document files -->
+                        &lt;!&ndash; document files &ndash;&gt;
                         <exclude>**/*.md</exclude>
                         <excldue>**/*.MD</excldue>
                         <exclude>**/*.txt</exclude>
                         <exclude>**/docs/**</exclude>
-                        <!-- UI files -->
+                        &lt;!&ndash; UI files &ndash;&gt;
                         <exclude>**/.babelrc</exclude>
                         <exclude>**/.editorconfig</exclude>
                         <exclude>**/.eslintignore</exclude>
@@ -671,7 +671,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
         </plugins>
     </build>
 </project>

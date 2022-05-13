@@ -194,11 +194,11 @@ shenyu:
       - /actuator/health
       - /health_check
   extPlugin:
-    path:
+    path: D:\\shenyu-ext-plugin
     enabled: true
     threads: 1
-    scheduleTime: 300
-    scheduleDelay: 30
+    scheduleTime: 10
+    scheduleDelay: 1
   scheduler:
     enabled: false
     type: fixed
