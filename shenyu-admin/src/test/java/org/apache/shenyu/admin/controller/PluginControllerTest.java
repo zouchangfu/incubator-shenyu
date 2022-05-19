@@ -85,7 +85,7 @@ public final class PluginControllerTest {
         this.mockMvc = MockMvcBuilders.standaloneSetup(pluginController)
                 .setControllerAdvice(new ExceptionHandlers())
                 .build();
-        this.pluginVO = new PluginVO("123", "1", "t_n", "1", 1, true,
+        this.pluginVO = new PluginVO("123", "1", "t_n", "1", 1, true,null,
                 DateUtils.localDateTimeToString(LocalDateTime.now()), DateUtils.localDateTimeToString(LocalDateTime.now()));
         SpringBeanUtils.getInstance().setApplicationContext(mock(ConfigurableApplicationContext.class));
 

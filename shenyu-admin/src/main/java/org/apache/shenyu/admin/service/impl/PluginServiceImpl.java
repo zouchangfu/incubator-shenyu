@@ -75,8 +75,7 @@ public class PluginServiceImpl implements PluginService {
      * @return rows
      */
     @Override
-    public String createOrUpdate(final PluginDTO pluginDTO) {
-        return StringUtils.isBlank(pluginDTO.getId()) ? this.create(pluginDTO) : this.update(pluginDTO);
+    public String createOrUpdate(final PluginDTO pluginDTO) { return StringUtils.isBlank(pluginDTO.getId()) ? this.create(pluginDTO) : this.update(pluginDTO);
     }
     
     /**
@@ -213,6 +212,7 @@ public class PluginServiceImpl implements PluginService {
      * @return success is empty
      */
     private String update(final PluginDTO pluginDTO) {
+        pluginDTO.setPath("{\"localPath\":\"d:\\\\dev\",\"remotePath\":\"http://127.0.0.1:8080/plugin/download\"}");
         Assert.isNull(pluginMapper.nameExistedExclude(pluginDTO.getName(), Collections.singletonList(pluginDTO.getId())), AdminConstants.PLUGIN_NAME_IS_EXIST);
         final PluginDO before = pluginMapper.selectById(pluginDTO.getId());
         PluginDO pluginDO = PluginDO.buildPluginDO(pluginDTO);

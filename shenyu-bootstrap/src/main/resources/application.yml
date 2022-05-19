@@ -194,11 +194,13 @@ shenyu:
       - /actuator/health
       - /health_check
   extPlugin:
-    path: D:\\shenyu-ext-plugin
+    path: D:\\shenyu-ext-plugin\\gateway
     enabled: true
     threads: 1
     scheduleTime: 10
     scheduleDelay: 1
+    username: admin
+    password: 123456
   scheduler:
     enabled: false
     type: fixed

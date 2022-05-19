@@ -37,7 +37,8 @@
         config,
         role,
         sort,
-        enabled
+        enabled,
+        path
     </sql>
 
     <select id="selectById" parameterType="java.lang.String" resultMap="BaseResultMap">

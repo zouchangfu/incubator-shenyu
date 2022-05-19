@@ -60,6 +60,11 @@ public class PluginVO implements Serializable {
     private Boolean enabled;
 
     /**
+     * plugin path.
+     */
+    private String path;
+
+    /**
      * created time.
      */
     private String dateCreated;
@@ -78,6 +83,7 @@ public class PluginVO implements Serializable {
                     final String config,
                     final Integer sort,
                     final Boolean enabled,
+                    final String path,
                     final String dateCreated,
                     final String dateUpdated) {
         this.id = id;
@@ -86,6 +92,7 @@ public class PluginVO implements Serializable {
         this.config = config;
         this.sort = sort;
         this.enabled = enabled;
+        this.path = path;
         this.dateCreated = dateCreated;
         this.dateUpdated = dateUpdated;
     }
@@ -190,6 +197,24 @@ public class PluginVO implements Serializable {
     }
 
     /**
+     * Sets the path.
+     *
+     * @param path path
+     */
+    public void setPath(final String path) {
+        this.path = path;
+    }
+
+    /**
+     * Gets the value of path.
+     *
+     * @return the value of path
+     */
+    public String getPath() {
+        return path;
+    }
+
+    /**
      * Sets the enabled.
      *
      * @param enabled enabled
@@ -242,7 +267,7 @@ public class PluginVO implements Serializable {
      */
     public static PluginVO buildPluginVO(final PluginDO pluginDO) {
         return new PluginVO(pluginDO.getId(), pluginDO.getRole(), pluginDO.getName(),
-                pluginDO.getConfig(), pluginDO.getSort(), pluginDO.getEnabled(),
+                pluginDO.getConfig(), pluginDO.getSort(), pluginDO.getEnabled(),pluginDO.getPath(),
                 DateUtils.localDateTimeToString(pluginDO.getDateCreated().toLocalDateTime()),
                 DateUtils.localDateTimeToString(pluginDO.getDateUpdated().toLocalDateTime()));
     }

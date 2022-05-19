@@ -35,7 +35,9 @@ public class PluginData {
     private String role;
 
     private Boolean enabled;
-    
+
+    private String path;
+
     private Integer sort;
 
     /**
@@ -60,24 +62,25 @@ public class PluginData {
         this.role = role;
         this.enabled = enabled;
     }
-    
+
     /**
      * all args constructor.
-     * 
-     * @param id id
-     * @param name name
-     * @param config config
-     * @param role role
+     *
+     * @param id      id
+     * @param name    name
+     * @param config  config
+     * @param role    role
      * @param enabled enabled
-     * @param sort sort
+     * @param sort    sort
      */
     public PluginData(final String id, final String name, final String config, final String role, final Boolean enabled,
-                      final Integer sort) {
+                      final String path, final Integer sort) {
         this.id = id;
         this.name = name;
         this.config = config;
         this.role = role;
         this.enabled = enabled;
+        this.path = path;
         this.sort = sort;
     }
 
@@ -92,6 +95,7 @@ public class PluginData {
         this.config = builder.config;
         this.role = builder.role;
         this.enabled = builder.enabled;
+        this.path = builder.path;
         this.sort = builder.sort;
     }
 
@@ -186,6 +190,24 @@ public class PluginData {
     }
 
     /**
+     * Sets the path.
+     *
+     * @param path path
+     */
+    public void setPath(final String path) {
+        this.path = path;
+    }
+
+    /**
+     * Gets the value of path.
+     *
+     * @return the value of path
+     */
+    public String getPath() {
+        return path;
+    }
+
+    /**
      * get sort.
      *
      * @return enabled
@@ -197,7 +219,7 @@ public class PluginData {
 
     /**
      * set sort.
-     * 
+     *
      * @param sort sort value
      */
     public void setSort(final Integer sort) {
@@ -223,32 +245,25 @@ public class PluginData {
         }
         PluginData that = (PluginData) o;
         return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(config, that.config)
-                && Objects.equals(role, that.role) && Objects.equals(enabled, that.enabled);
+                && Objects.equals(role, that.role) && Objects.equals(enabled, that.enabled) && Objects.equals(path, that.path);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, config, role, enabled);
+        return Objects.hash(id, name, config, role, enabled, path);
     }
 
     @Override
     public String toString() {
-        return "PluginData{"
-                + "id='"
-                + id
-                + '\''
-                + ", name='"
-                + name
-                + '\''
-                + ", config='"
-                + config
-                + '\''
-                + ", role='"
-                + role
-                + '\''
-                + ", enabled="
-                + enabled
-                + '}';
+        return "PluginData{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", config='" + config + '\'' +
+                ", role='" + role + '\'' +
+                ", enabled=" + enabled +
+                ", path='" + path + '\'' +
+                ", sort=" + sort +
+                '}';
     }
 
     /**
@@ -280,6 +295,11 @@ public class PluginData {
          * enabled.
          */
         private Boolean enabled;
+
+        /**
+         * path.
+         */
+        private String path;
 
         /**
          * sort.
@@ -320,6 +340,17 @@ public class PluginData {
          */
         public Builder name(final String name) {
             this.name = name;
+            return this;
+        }
+
+        /**
+         * build path.
+         *
+         * @param path path
+         * @return this
+         */
+        public Builder path(final String path) {
+            this.path = path;
             return this;
         }
 

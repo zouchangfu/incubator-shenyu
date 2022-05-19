@@ -533,6 +533,11 @@ public interface Constants {
     String LOGIN_PATH = "/platform/login";
 
     /**
+     * When download plugin, the download path.
+     */
+    String DOWNLOAD_PATH = "/plugin/download";
+
+    /**
      * When register by http, admin username.
      */
     String USER_NAME = "username";
