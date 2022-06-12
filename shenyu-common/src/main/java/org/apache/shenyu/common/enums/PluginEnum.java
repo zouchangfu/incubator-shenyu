@@ -36,6 +36,11 @@ public enum PluginEnum {
     GLOBAL(5, 0, "global"),
 
     /**
+     * the mock plugin enum.
+     */
+    MOCK(8, 0, "mock"),
+
+    /**
      * the cache plugin enum.
      */
     CACHE(10, 0, "cache"),
