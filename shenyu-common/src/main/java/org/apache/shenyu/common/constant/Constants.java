@@ -573,6 +573,11 @@ public interface Constants {
     String ADMIN_RESULT_TOKEN = "token";
 
     /**
+     * The admin return result expired time.
+     */
+    String ADMIN_RESULT_EXPIRED_TIME = "expiredTime";
+
+    /**
      * The admin userName.
      */
     String ADMIN_RESULT_USERNAME = "userName";

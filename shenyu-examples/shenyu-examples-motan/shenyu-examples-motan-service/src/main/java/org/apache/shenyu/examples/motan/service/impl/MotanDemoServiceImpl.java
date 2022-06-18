@@ -20,22 +20,25 @@ package org.apache.shenyu.examples.motan.service.impl;
 import com.weibo.api.motan.config.springsupport.annotation.MotanService;
 import org.apache.shenyu.client.motan.common.annotation.ShenyuMotanClient;
 import org.apache.shenyu.examples.motan.service.MotanDemoService;
+import org.apache.shenyu.examples.motan.service.aop.Log;
 
 /**
  * Motan demo service.
  */
 @MotanService(export = "demoMotan:8002")
+@ShenyuMotanClient("/demo/**")
 public class MotanDemoServiceImpl implements MotanDemoService {
 
     @Override
-    @ShenyuMotanClient(path = "/hello")
+    @ShenyuMotanClient("/hello")
+    @Log
     public String hello(final String name) {
         return "hello " + name;
     }
 
     @Override
-    @ShenyuMotanClient(path = "/timeout")
-    public String testTimeOut(final String timeout)  {
+    @ShenyuMotanClient("/timeout")
+    public String testTimeOut(final String timeout) {
         try {
             Thread.sleep((long) (Double.parseDouble(timeout) * 1000));
         } catch (InterruptedException e) {
