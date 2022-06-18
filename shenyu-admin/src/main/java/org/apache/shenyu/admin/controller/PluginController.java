@@ -249,7 +249,7 @@ public class PluginController implements PagedController<PluginQueryCondition, P
         try {
             OutputStream outputStream = res.getOutputStream();
             byte[] buff = new byte[1024];
-            bis = new BufferedInputStream(new FileInputStream(new File(pluginPathData.getPath() + File.separator + pluginPathData.getPathDetail())));
+            bis = new BufferedInputStream(new FileInputStream(new File(pluginPathData.getPath() + File.separator + pluginPathData.getFilename())));
             int i = bis.read(buff);
             while (i != -1) {
                 outputStream.write(buff, 0, buff.length);

@@ -12,9 +12,9 @@ public class PluginPathData {
     private String path;
 
     /**
-     * the plugin pathDetail
+     * the plugin filename
      */
-    private String pathDetail;
+    private String filename;
 
     /**
      * the plugin server
@@ -22,19 +22,19 @@ public class PluginPathData {
     private String server;
 
     /**
-     * Gets the value of pathDetail.
+     * Gets the value of filename.
      * @return
      */
-    public String getPathDetail() {
-        return pathDetail;
+    public String getFilename() {
+        return filename;
     }
 
     /**
-     * Sets the pathDetail.
-     * @param pathDetail
+     * Sets the filename.
+     * @param filename
      */
-    public void setPathDetail(String pathDetail) {
-        this.pathDetail = pathDetail;
+    public void setFilename(String filename) {
+        this.filename = filename;
     }
 
     /**
@@ -79,20 +79,20 @@ public class PluginPathData {
         if (o == null || getClass() != o.getClass()) return false;
         PluginPathData pluginPathData = (PluginPathData) o;
         return Objects.equals(path, pluginPathData.path) &&
-                Objects.equals(pathDetail, pluginPathData.pathDetail) &&
+                Objects.equals(filename, pluginPathData.filename) &&
                 Objects.equals(server, pluginPathData.server);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(path, pathDetail, server);
+        return Objects.hash(path, filename, server);
     }
 
     @Override
     public String toString() {
         return "PluginPathData{" +
                 "path='" + path + '\'' +
-                ", pathDetail='" + pathDetail + '\'' +
+                ", filename='" + filename + '\'' +
                 ", server='" + server + '\'' +
                 '}';
     }

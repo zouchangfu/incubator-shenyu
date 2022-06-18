@@ -141,16 +141,16 @@ public class ShenyuLoaderService {
 
             InputStream remoteExtPluginStream = fetchRemoteExtPluginStream(pluginData.getId(), pluginPathData.getServer());
 
-            storeExtPluginToLocal(pluginPathData.getPathDetail(), remoteExtPluginStream);
+            storeExtPluginToLocal(pluginPathData.getFilename(), remoteExtPluginStream);
 
         }
 
     }
 
-    private void storeExtPluginToLocal(String pluginPathDetail, InputStream remoteExtPluginStream) {
+    private void storeExtPluginToLocal(String filename, InputStream remoteExtPluginStream) {
         if (Objects.nonNull(remoteExtPluginStream)) {
             String path = shenyuConfig.getExtPlugin().getPath();
-            File file = new File(path + File.separator + pluginPathDetail);
+            File file = new File(path + File.separator + filename);
             if (!file.exists()) {
                 file.getParentFile().mkdirs();
                 try (FileOutputStream fileOut = new FileOutputStream(file);) {
