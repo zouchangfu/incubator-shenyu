@@ -49,6 +49,11 @@ public final class PluginDO extends BaseDO {
     private Boolean enabled;
 
     /**
+     * plugin path.
+     */
+    private String path;
+
+    /**
      * the role to classify plugin.
      */
     private String role;
@@ -61,10 +66,11 @@ public final class PluginDO extends BaseDO {
     public PluginDO() {
     }
 
-    public PluginDO(final String name, final String config, final Boolean enabled, final String role, final Integer sort) {
+    public PluginDO(final String name, final String config, final Boolean enabled,final String path, final String role, final Integer sort) {
         this.name = name;
         this.config = config;
         this.enabled = enabled;
+        this.path = path;
         this.role = role;
         this.sort = sort;
     }
@@ -122,6 +128,26 @@ public final class PluginDO extends BaseDO {
     public void setEnabled(final Boolean enabled) {
         this.enabled = enabled;
     }
+
+
+    /**
+     * Sets the path.
+     *
+     * @param path path
+     */
+    public void setPath(final String path) {
+        this.path = path;
+    }
+
+    /**
+     * Gets the value of path.
+     *
+     * @return the value of path
+     */
+    public String getPath() {
+        return path;
+    }
+
 
     /**
      * Gets the value of role.
@@ -181,6 +207,7 @@ public final class PluginDO extends BaseDO {
                     .name(item.getName())
                     .config(item.getConfig())
                     .enabled(item.getEnabled())
+                    .path(item.getPath())
                     .role(item.getRole())
                     .sort(item.getSort())
                     .dateUpdated(currentTime)
@@ -210,13 +237,14 @@ public final class PluginDO extends BaseDO {
         return Objects.equals(name, pluginDO.name)
                 && Objects.equals(config, pluginDO.config)
                 && Objects.equals(enabled, pluginDO.enabled)
+                && Objects.equals(path, pluginDO.path)
                 && Objects.equals(role, pluginDO.role)
                 && Objects.equals(sort, pluginDO.sort);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), name, config, enabled, role, sort);
+        return Objects.hash(super.hashCode(), name, config, enabled,path, role, sort);
     }
 
     public static final class PluginDOBuilder {
@@ -232,6 +260,8 @@ public final class PluginDO extends BaseDO {
         private String config;
 
         private Boolean enabled;
+
+        private String path;
 
         private String role;
 
@@ -307,6 +337,17 @@ public final class PluginDO extends BaseDO {
         }
 
         /**
+         * path.
+         *
+         * @param path the path.
+         * @return PluginDOBuilder.
+         */
+        public PluginDOBuilder path(final String path) {
+            this.path = path;
+            return this;
+        }
+
+        /**
          * role.
          *
          * @param role the role.
@@ -341,6 +382,7 @@ public final class PluginDO extends BaseDO {
             pluginDO.setName(name);
             pluginDO.setConfig(config);
             pluginDO.setEnabled(enabled);
+            pluginDO.setPath(path);
             pluginDO.setRole(role);
             pluginDO.setSort(sort);
             return pluginDO;

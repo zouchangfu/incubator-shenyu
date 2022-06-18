@@ -33,8 +33,11 @@ import org.apache.shenyu.admin.service.SyncDataService;
 import org.apache.shenyu.admin.utils.ShenyuResultMessage;
 import org.apache.shenyu.admin.validation.annotation.Existed;
 import org.apache.shenyu.common.dto.PluginData;
+import org.apache.shenyu.common.dto.PluginPathData;
 import org.apache.shenyu.common.enums.DataEventTypeEnum;
+import org.apache.shenyu.common.utils.GsonUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,11 +47,22 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 
 /**
@@ -58,16 +72,20 @@ import java.util.List;
 @RestController
 @RequestMapping("/plugin")
 public class PluginController implements PagedController<PluginQueryCondition, PluginVO> {
-    
+
     private final PluginService pluginService;
-    
+
     private final SyncDataService syncDataService;
-    
+
+    @Value("${server.port}")
+    private int port;
+
+
     public PluginController(final PluginService pluginService, final SyncDataService syncDataService) {
         this.pluginService = pluginService;
         this.syncDataService = syncDataService;
     }
-    
+
     /**
      * query plugins.
      *
@@ -84,7 +102,7 @@ public class PluginController implements PagedController<PluginQueryCondition, P
         CommonPager<PluginVO> commonPager = pluginService.listByPage(new PluginQuery(name, enabled, new PageParameter(currentPage, pageSize)));
         return ShenyuAdminResult.success(ShenyuResultMessage.QUERY_SUCCESS, commonPager);
     }
-    
+
     /**
      * query All plugins.
      *
@@ -95,7 +113,7 @@ public class PluginController implements PagedController<PluginQueryCondition, P
         List<PluginData> pluginDataList = pluginService.listAll();
         return ShenyuAdminResult.success(ShenyuResultMessage.QUERY_SUCCESS, pluginDataList);
     }
-    
+
     /**
      * detail plugin.
      *
@@ -110,7 +128,7 @@ public class PluginController implements PagedController<PluginQueryCondition, P
         PluginVO pluginVO = pluginService.findById(id);
         return ShenyuAdminResult.success(ShenyuResultMessage.DETAIL_SUCCESS, pluginVO);
     }
-    
+
     /**
      * create plugin.
      *
@@ -122,7 +140,7 @@ public class PluginController implements PagedController<PluginQueryCondition, P
     public ShenyuAdminResult createPlugin(@Valid @RequestBody final PluginDTO pluginDTO) {
         return ShenyuAdminResult.success(pluginService.createOrUpdate(pluginDTO));
     }
-    
+
     /**
      * update plugin.
      *
@@ -139,7 +157,7 @@ public class PluginController implements PagedController<PluginQueryCondition, P
         pluginDTO.setId(id);
         return createPlugin(pluginDTO);
     }
-    
+
     /**
      * delete plugins.
      *
@@ -155,7 +173,7 @@ public class PluginController implements PagedController<PluginQueryCondition, P
         }
         return ShenyuAdminResult.success(ShenyuResultMessage.DELETE_SUCCESS);
     }
-    
+
     /**
      * Enable plugins.
      *
@@ -171,7 +189,7 @@ public class PluginController implements PagedController<PluginQueryCondition, P
         }
         return ShenyuAdminResult.success(ShenyuResultMessage.ENABLE_SUCCESS);
     }
-    
+
     /**
      * sync plugins.
      *
@@ -180,6 +198,12 @@ public class PluginController implements PagedController<PluginQueryCondition, P
     @PostMapping("/syncPluginAll")
     @RequiresPermissions("system:plugin:modify")
     public ShenyuAdminResult syncPluginAll() {
+        try {
+            InetAddress address = InetAddress.getLocalHost();
+            System.err.println("===============================" + address.getHostAddress() + ":" + port + "=======================");
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
         boolean success = syncDataService.syncAll(DataEventTypeEnum.REFRESH);
         if (success) {
             return ShenyuAdminResult.success(ShenyuResultMessage.SYNC_SUCCESS);
@@ -187,7 +211,7 @@ public class PluginController implements PagedController<PluginQueryCondition, P
             return ShenyuAdminResult.error(ShenyuResultMessage.SYNC_FAIL);
         }
     }
-    
+
     /**
      * Sync plugin data.
      *
@@ -200,7 +224,7 @@ public class PluginController implements PagedController<PluginQueryCondition, P
                                                     provider = PluginMapper.class) final String id) {
         return ShenyuAdminResult.success(syncDataService.syncPluginData(id) ? ShenyuResultMessage.SYNC_SUCCESS : ShenyuResultMessage.SYNC_FAIL);
     }
-    
+
     /**
      * active plugin snapshot.
      *
@@ -210,7 +234,57 @@ public class PluginController implements PagedController<PluginQueryCondition, P
     public ShenyuAdminResult activePluginSnapshot() {
         return ShenyuAdminResult.success(pluginService.activePluginSnapshot());
     }
-    
+
+    /**
+     * download plugin
+     *
+     * @param id
+     * @param res
+     */
+    @GetMapping(value = "/download/{id}")
+    public void download(@PathVariable String id, HttpServletResponse res) {
+        PluginVO pluginVO = pluginService.findById(id);
+        BufferedInputStream bis = null;
+        PluginPathData pluginPathData = GsonUtils.getInstance().fromJson(pluginVO.getPath(), PluginPathData.class);
+        try {
+            OutputStream outputStream = res.getOutputStream();
+            byte[] buff = new byte[1024];
+            bis = new BufferedInputStream(new FileInputStream(new File(pluginPathData.getPath() + File.separator + pluginPathData.getFilename())));
+            int i = bis.read(buff);
+            while (i != -1) {
+                outputStream.write(buff, 0, buff.length);
+                outputStream.flush();
+                i = bis.read(buff);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (bis != null) {
+                    bis.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * upload file to local
+     * @param path the path
+     * @param request the request
+     * @return the string
+     */
+    @PostMapping(value = "/uploadToLocal")
+    public ShenyuAdminResult uploadToLocal(String path, HttpServletRequest request) {
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+        MultipartFile file = multipartRequest.getFile("file");
+        if (file == null) {
+            return ShenyuAdminResult.error("The file cannot be empty ");
+        }
+        return ShenyuAdminResult.success(pluginService.uploadToLocal(path, file));
+    }
+
     @Override
     public PageService<PluginQueryCondition, PluginVO> pageService() {
         return pluginService;

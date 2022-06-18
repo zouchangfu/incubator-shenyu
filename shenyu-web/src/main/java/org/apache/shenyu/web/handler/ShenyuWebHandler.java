@@ -23,8 +23,10 @@ import org.apache.shenyu.common.dto.PluginData;
 import org.apache.shenyu.common.enums.PluginHandlerEventEnum;
 import org.apache.shenyu.plugin.api.ShenyuPlugin;
 import org.apache.shenyu.plugin.api.ShenyuPluginChain;
+import org.apache.shenyu.plugin.api.utils.SpringBeanUtils;
 import org.apache.shenyu.plugin.base.cache.BaseDataCache;
 import org.apache.shenyu.plugin.base.cache.PluginHandlerEvent;
+import org.apache.shenyu.web.loader.ShenyuLoaderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
@@ -35,12 +37,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
@@ -128,6 +125,10 @@ public final class ShenyuWebHandler implements WebHandler, ApplicationListener<P
     public void onApplicationEvent(final PluginHandlerEvent event) {
         PluginHandlerEventEnum stateEnums = event.getPluginStateEnums();
         PluginData pluginData = (PluginData) event.getSource();
+
+        ShenyuLoaderService shenyuLoaderService = SpringBeanUtils.getInstance().getBean(ShenyuLoaderService.class);
+        shenyuLoaderService.executeLoaderRemoteExtPlugin(pluginData);
+
         switch (stateEnums) {
             case ENABLED:
                 onPluginEnabled(pluginData);

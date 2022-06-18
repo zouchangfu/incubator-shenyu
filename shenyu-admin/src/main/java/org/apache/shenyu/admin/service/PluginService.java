@@ -25,6 +25,7 @@ import org.apache.shenyu.admin.model.query.PluginQueryCondition;
 import org.apache.shenyu.admin.model.vo.PluginSnapshotVO;
 import org.apache.shenyu.admin.model.vo.PluginVO;
 import org.apache.shenyu.common.dto.PluginData;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -110,4 +111,12 @@ public interface PluginService extends PageService<PluginQueryCondition, PluginV
      * @return plugin list
      */
     List<PluginSnapshotVO> activePluginSnapshot();
+
+    /**
+     * upload file to local
+     * @param path the path
+     * @param file the file
+     * @return the string
+     */
+    String uploadToLocal(String path, MultipartFile file);
 }

@@ -38,9 +38,14 @@ import org.apache.shenyu.admin.utils.ListUtil;
 import org.apache.shenyu.admin.utils.ShenyuResultMessage;
 import org.apache.shenyu.common.constant.AdminConstants;
 import org.apache.shenyu.common.dto.PluginData;
+import org.apache.shenyu.common.exception.ShenyuException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.FileCopyUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -51,23 +56,23 @@ import java.util.stream.Collectors;
  */
 @Service
 public class PluginServiceImpl implements PluginService {
-    
+
     private final PluginMapper pluginMapper;
-    
+
     private final PluginEventPublisher pluginEventPublisher;
-    
+
     public PluginServiceImpl(final PluginMapper pluginMapper,
                              final PluginEventPublisher pluginEventPublisher) {
         this.pluginMapper = pluginMapper;
         this.pluginEventPublisher = pluginEventPublisher;
     }
-    
+
     @Override
     public List<PluginVO> searchByCondition(final PluginQueryCondition condition) {
         condition.init();
         return pluginMapper.searchByCondition(condition);
     }
-    
+
     /**
      * create or update plugin.
      *
@@ -78,7 +83,7 @@ public class PluginServiceImpl implements PluginService {
     public String createOrUpdate(final PluginDTO pluginDTO) {
         return StringUtils.isBlank(pluginDTO.getId()) ? this.create(pluginDTO) : this.update(pluginDTO);
     }
-    
+
     /**
      * delete plugins.
      *
@@ -100,7 +105,7 @@ public class PluginServiceImpl implements PluginService {
         }
         return StringUtils.EMPTY;
     }
-    
+
     /**
      * plugin enabled.
      *
@@ -122,7 +127,7 @@ public class PluginServiceImpl implements PluginService {
         }
         return StringUtils.EMPTY;
     }
-    
+
     /**
      * find plugin by id.
      *
@@ -133,7 +138,7 @@ public class PluginServiceImpl implements PluginService {
     public PluginVO findById(final String id) {
         return PluginVO.buildPluginVO(pluginMapper.selectById(id));
     }
-    
+
     /**
      * find page of plugin by query.
      *
@@ -148,7 +153,7 @@ public class PluginServiceImpl implements PluginService {
                 .map(PluginVO::buildPluginVO)
                 .collect(Collectors.toList()));
     }
-    
+
     /**
      * query all plugin.
      *
@@ -158,19 +163,19 @@ public class PluginServiceImpl implements PluginService {
     public List<PluginData> listAll() {
         return ListUtil.map(pluginMapper.selectAll(), PluginTransfer.INSTANCE::mapToData);
     }
-    
+
     @Override
     public List<PluginData> listAllNotInResource() {
         return ListUtil.map(pluginMapper.listAllNotInResource(), PluginTransfer.INSTANCE::mapToData);
     }
-    
+
     @Override
     public String selectIdByName(final String name) {
         PluginDO pluginDO = pluginMapper.selectByName(name);
         Objects.requireNonNull(pluginDO);
         return pluginDO.getId();
     }
-    
+
     /**
      * Find by name plugin do.
      *
@@ -181,12 +186,35 @@ public class PluginServiceImpl implements PluginService {
     public PluginDO findByName(final String name) {
         return pluginMapper.selectByName(name);
     }
-    
+
     @Override
     public List<PluginSnapshotVO> activePluginSnapshot() {
         return pluginMapper.activePluginSnapshot();
     }
-    
+
+    /**
+     * upload file to local
+     *
+     * @param path          the path
+     * @param multipartFile the multipartFile
+     * @return
+     */
+    @Override
+    public String uploadToLocal(String path, MultipartFile multipartFile) {
+        try {
+            File file = new File(path);
+            if (!file.exists()) {
+                file.mkdirs();
+            }
+            String savePath = file.getPath() + File.separator + multipartFile.getOriginalFilename();
+            File saveFile = new File(savePath);
+            FileCopyUtils.copy(multipartFile.getBytes(), saveFile);
+        } catch (IOException e) {
+            throw new ShenyuException(e.getCause());
+        }
+        return StringUtils.EMPTY;
+    }
+
     /**
      * create plugin.<br>
      * insert plugin and insert plugin data.
@@ -205,7 +233,7 @@ public class PluginServiceImpl implements PluginService {
         }
         return ShenyuResultMessage.CREATE_SUCCESS;
     }
-    
+
     /**
      * update plugin.<br>
      *

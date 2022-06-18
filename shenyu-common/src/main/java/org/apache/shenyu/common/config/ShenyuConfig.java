@@ -414,6 +414,10 @@ public class ShenyuConfig {
         private Integer scheduleTime = 300;
     
         private Integer scheduleDelay = 30;
+
+        private String username;
+
+        private String password;
     
         /**
          * Gets path.
@@ -503,6 +507,42 @@ public class ShenyuConfig {
          */
         public void setScheduleDelay(final Integer scheduleDelay) {
             this.scheduleDelay = scheduleDelay;
+        }
+
+        /**
+         * Gets username.
+         *
+         * @return the username
+         */
+        public String getUsername() {
+            return username;
+        }
+
+        /**
+         * Sets password.
+         *
+         * @param password the password
+         */
+        public void setPassword(final String password) {
+            this.password = password;
+        }
+
+        /**
+         * Gets password.
+         *
+         * @return the password
+         */
+        public String getPassword() {
+            return password;
+        }
+
+        /**
+         * Sets username.
+         *
+         * @param username the username
+         */
+        public void setUsername(final String username) {
+            this.username = username;
         }
     }
     
